@@ -1,26 +1,35 @@
-import { useState } from 'react';
-import { User, Shield, ArrowLeft, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { useState } from "react";
+import axios from "axios";
+import {
+  User,
+  Shield,
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  CheckCircle,
+} from "lucide-react";
 
 export default function LoginPage() {
   const [userType, setUserType] = useState(null);
-  const [mode, setMode] = useState('signin');
+  const [mode, setMode] = useState("signin");
   const [showPassword, setShowPassword] = useState(false);
   const [aadharVerified, setAadharVerified] = useState(false);
 
   const [formData, setFormData] = useState({
-    full_name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: '',
-    aadhar_number: '',
-    address: '',
-    officerId: '',
-    department: '',
-    designation: ''
+    full_name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
+    aadhar_number: "",
+    address: "",
+    officerId: "",
+    department: "",
+    designation: "",
   });
 
-  const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleInputChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleAadharVerify = () => {
     if (formData.aadhar_number && formData.aadhar_number.length === 12) {
@@ -28,18 +37,66 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = () => {
-    const payload = { ...formData, role: userType === 'citizen' ? 'citizen' : 'district_leader', is_verified: aadharVerified };
-    console.log('Form submitted:', { mode, payload });
-    // Send payload to backend API
+  const handleSubmit = async () => {
+    const payload = {
+      ...formData,
+      role: userType === "citizen" ? "citizen" : "district_leader",
+      is_verified: aadharVerified,
+    };
+
+    try {
+      if (mode === "signup") {
+        const res = await axios.post(
+          "http://127.0.0.1:8000/api/user/register/",
+          payload
+        );
+        alert("Account created successfully!");
+        console.log(res.data);
+        setMode("signin");
+      } else {
+        const res = await axios.post("http://127.0.0.1:8000/api/token/", {
+          email: formData.email,
+          password: formData.password,
+        });
+
+        const { access, refresh } = res.data;
+        localStorage.setItem("accessToken", access);
+        localStorage.setItem("refreshToken", refresh);
+
+        alert("Login successful!");
+        console.log("JWT tokens:", { access, refresh });
+
+        const profileRes = await axios.get(
+          "http://127.0.0.1:8000/api/protected-endpoint/",
+          {
+            headers: {
+              Authorization: `Bearer ${access}`,
+            },
+          }
+        );
+        console.log("Protected API response:", profileRes.data);
+      }
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      alert("Something went wrong. Check console.");
+    }
   };
 
   const resetForm = () => {
     setUserType(null);
-    setMode('signin');
+    setMode("signin");
     setAadharVerified(false);
     setFormData({
-      full_name: '', email: '', password: '', confirmPassword: '', phone: '', aadhar_number: '', address: '', officerId: '', department: '', designation: ''
+      full_name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      phone: "",
+      aadhar_number: "",
+      address: "",
+      officerId: "",
+      department: "",
+      designation: "",
     });
   };
 
@@ -47,7 +104,7 @@ export default function LoginPage() {
     return (
       <div
         className="min-h-screen flex justify-center items-center p-4"
-        style={{ background: 'linear-gradient(135deg, #053a2b, #0b3f35)' }}
+        style={{ background: "linear-gradient(135deg, #053a2b, #0b3f35)" }}
       >
         <div className="max-w-md w-full text-center">
           <div className="mb-6">
@@ -59,15 +116,17 @@ export default function LoginPage() {
           </div>
           <div className="flex flex-col gap-4">
             <button
-              onClick={() => setUserType('citizen')}
+              onClick={() => setUserType("citizen")}
               className="flex items-center justify-center gap-3 px-6 py-4 font-semibold rounded-xl bg-white text-[#053a2b] shadow hover:scale-105 transition-transform"
             >
               <User className="text-[#0b3f35]" /> Citizen Login
             </button>
             <button
-              onClick={() => setUserType('officer')}
+              onClick={() => setUserType("officer")}
               className="flex items-center justify-center gap-3 px-6 py-4 font-semibold rounded-xl text-white shadow hover:scale-105 transition-transform"
-              style={{ background: 'linear-gradient(to right, #053a2b, #0b3f35)' }}
+              style={{
+                background: "linear-gradient(to right, #053a2b, #0b3f35)",
+              }}
             >
               <Shield /> Officer Login
             </button>
@@ -80,32 +139,46 @@ export default function LoginPage() {
   return (
     <div
       className="min-h-screen flex justify-center items-center p-4"
-      style={{ background: 'linear-gradient(135deg, #053a2b, #0b3f35)' }}
+      style={{ background: "linear-gradient(135deg, #053a2b, #0b3f35)" }}
     >
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl">
         {/* Header */}
         <div className="flex items-center mb-6">
-          <button onClick={resetForm} className="p-2 rounded-full hover:bg-gray-100">
+          <button
+            onClick={resetForm}
+            className="p-2 rounded-full hover:bg-gray-100"
+          >
             <ArrowLeft className="text-gray-500" />
           </button>
           <div className="flex items-center gap-2 ml-2">
-            {userType === 'citizen' ? <User className="text-[#0b3f35]" /> : <Shield className="text-[#0b3f35]" />}
-            <h2 className="text-xl font-bold text-gray-800">{userType === 'citizen' ? 'Citizen' : 'Officer'} {mode === 'signin' ? 'Sign In' : 'Sign Up'}</h2>
+            {userType === "citizen" ? (
+              <User className="text-[#0b3f35]" />
+            ) : (
+              <Shield className="text-[#0b3f35]" />
+            )}
+            <h2 className="text-xl font-bold text-gray-800">
+              {userType === "citizen" ? "Citizen" : "Officer"}{" "}
+              {mode === "signin" ? "Sign In" : "Sign Up"}
+            </h2>
           </div>
         </div>
 
         {/* Citizen Toggle */}
-        {userType === 'citizen' && (
+        {userType === "citizen" && (
           <div className="flex bg-gray-100 rounded-md p-1 mb-6">
             <button
-              onClick={() => setMode('signin')}
-              className={`flex-1 py-2 rounded-md font-medium ${mode === 'signin' ? 'bg-[#053a2b] text-white shadow' : ''}`}
+              onClick={() => setMode("signin")}
+              className={`flex-1 py-2 rounded-md font-medium ${
+                mode === "signin" ? "bg-[#053a2b] text-white shadow" : ""
+              }`}
             >
               Sign In
             </button>
             <button
-              onClick={() => setMode('signup')}
-              className={`flex-1 py-2 rounded-md font-medium ${mode === 'signup' ? 'bg-[#053a2b] text-white shadow' : ''}`}
+              onClick={() => setMode("signup")}
+              className={`flex-1 py-2 rounded-md font-medium ${
+                mode === "signup" ? "bg-[#053a2b] text-white shadow" : ""
+              }`}
             >
               Sign Up
             </button>
@@ -115,50 +188,58 @@ export default function LoginPage() {
         {/* Form */}
         <div className="flex flex-col gap-4">
           {/* Sign Up Citizen Form */}
-          {mode === 'signup' && userType === 'citizen' && (
+          {mode === "signup" && userType === "citizen" && (
             <>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Full Name</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Full Name
+                </label>
                 <input
                   type="text"
                   name="full_name"
                   value={formData.full_name}
                   onChange={handleInputChange}
-                  className="w-full border rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
+                  className="w-full border text-black rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
                   required
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Email</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Email
+                </label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full border rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
+                  className="w-full border text-black rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
                   required
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Phone Number</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Phone Number
+                </label>
                 <input
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="w-full border rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
+                  className="w-full border text-black rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
                   required
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Password</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Password
+                </label>
                 <div className="relative">
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full border rounded-md p-3 pr-12 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
+                    className="w-full border text-black rounded-md p-3 pr-12 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
                     required
                   />
                   <button
@@ -171,7 +252,9 @@ export default function LoginPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Aadhar Number</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Aadhar Number
+                </label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -179,46 +262,60 @@ export default function LoginPage() {
                     value={formData.aadhar_number}
                     onChange={handleInputChange}
                     maxLength="12"
-                    className="flex-1 border rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
+                    className="flex-1 border text-black rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
                     required
                   />
                   <button
                     type="button"
                     onClick={handleAadharVerify}
-                    disabled={aadharVerified || formData.aadhar_number.length !== 12}
-                    className={`px-4 rounded-md ${aadharVerified ? 'bg-green-100 text-green-700 border-green-300' : 'bg-[#053a2b] text-white'}`}
+                    disabled={
+                      aadharVerified || formData.aadhar_number.length !== 12
+                    }
+                    className={`px-4 rounded-md ${
+                      aadharVerified
+                        ? "bg-green-100 text-green-700 border-green-300"
+                        : "bg-[#053a2b] text-white"
+                    }`}
                   >
-                    {aadharVerified ? <CheckCircle /> : 'Verify'}
+                    {aadharVerified ? <CheckCircle /> : "Verify"}
                   </button>
                 </div>
-                {aadharVerified && <p className="text-green-600 mt-1 flex items-center gap-1">Aadhar verified successfully</p>}
+                {aadharVerified && (
+                  <p className="text-green-600 mt-1 flex items-center gap-1">
+                    Aadhar verified successfully
+                  </p>
+                )}
               </div>
             </>
           )}
 
           {/* Sign In Form or Officer Form */}
-          {(mode === 'signin' || userType === 'officer') && (
+          {(mode === "signin" || userType === "officer") && (
             <>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Email</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Email
+                </label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full border rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
+                  className="w-full border text-black rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
                   required
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Password</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Password
+                </label>
                 <div className="relative">
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full border rounded-md p-3 pr-12 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
+                    className="w-full border text-black rounded-md p-3 pr-12 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
                     required
                   />
                   <button
@@ -236,14 +333,20 @@ export default function LoginPage() {
           <button
             onClick={handleSubmit}
             className="mt-4 py-3 text-white font-semibold rounded-md shadow hover:scale-105 transition-transform"
-            style={{ background: 'linear-gradient(to right, #053a2b, #0b3f35)' }}
+            style={{
+              background: "linear-gradient(to right, #053a2b, #0b3f35)",
+            }}
           >
-            {mode === 'signin' ? 'Sign In' : 'Create Account'}
+            {mode === "signin" ? "Sign In" : "Create Account"}
           </button>
         </div>
 
         {/* Footer */}
-        {mode === 'signin' && <button className="text-[#053a2b] mt-2 text-sm hover:text-[#0b3f35]">Forgot password?</button>}
+        {mode === "signin" && (
+          <button className="text-[#053a2b] mt-2 text-sm hover:text-[#0b3f35]">
+            Forgot password?
+          </button>
+        )}
       </div>
     </div>
   );
