@@ -171,17 +171,6 @@ export default function LoginPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Confirm Password</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="w-full border rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
-                  required
-                />
-              </div>
-              <div>
                 <label className="block text-gray-700 font-medium mb-1">Aadhar Number</label>
                 <div className="flex gap-2">
                   <input
@@ -203,16 +192,6 @@ export default function LoginPage() {
                   </button>
                 </div>
                 {aadharVerified && <p className="text-green-600 mt-1 flex items-center gap-1">Aadhar verified successfully</p>}
-              </div>
-              <div>
-                <label className="block text-gray-700 font-medium mb-1">Address</label>
-                <textarea
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  rows="3"
-                  className="w-full border rounded-md p-3 focus:border-[#0b3f35] focus:ring-1 focus:ring-[#0b3f35] outline-none"
-                />
               </div>
             </>
           )}
@@ -264,14 +243,6 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        {mode === 'signin' && userType === 'citizen' && (
-          <p className="mt-4 text-gray-500 text-sm">
-            Don't have an account?{' '}
-            <button onClick={() => setMode('signup')} className="text-[#053a2b] font-medium hover:text-[#0b3f35]">
-              Sign up here
-            </button>
-          </p>
-        )}
         {mode === 'signin' && <button className="text-[#053a2b] mt-2 text-sm hover:text-[#0b3f35]">Forgot password?</button>}
       </div>
     </div>
