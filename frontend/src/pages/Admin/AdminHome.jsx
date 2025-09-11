@@ -109,7 +109,8 @@ export default function AdminHome() {
                 <tr
                   key={c.id}
                   className="border-b border-gray-200 cursor-pointer hover:bg-green-50 transition-colors duration-150"
-                  onClick={() => navigate(`/officer/complaints/${c.id}`, { state: c })}
+                  onClick={() => navigate(`/officer/complaints/${c.id}`, { state: { complaint: c } })}
+
                 >
                   <td className="py-3 px-4 font-medium">{c.citizen}</td>
                   <td className="py-3 px-4">{c.issue}</td>
