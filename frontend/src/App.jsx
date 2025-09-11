@@ -8,51 +8,78 @@ import AdminHome from "./pages/Admin/AdminHome";
 import ViewComplaint from "./pages/Admin/ViewComplaint";
 import PrivateRoute from "./pages/Auth/Privateroute";
 import ReportList from "./pages/Citizen/ReportList";
+import Feedback from "./pages/Citizen/Feedback";
 
 function App() {
   return (
-    <Routes>     
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<LoginPage />} />
+    <>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<LoginPage />} />
 
-      <Route
-        path="/citizenhome"
-        element={
-          <PrivateRoute>
-            <CitizenHome />
-          </PrivateRoute>
-        }
-      />
+        {/* Citizen */}
+        <Route
+          path="/citizenhome"
+          element={
+            <PrivateRoute>
+              <CitizenHome />
+            </PrivateRoute>
+          }
+        />
 
-       <Route
-        path="/officehome"
-        element={
-          <PrivateRoute>
-            <AdminHome />
-          </PrivateRoute>
-        }
-      />
-       <Route
-        path="/complaints"
-        element={
-          <PrivateRoute>
-            <ViewComplaint />
-          </PrivateRoute>
-        }
-      />
-      
-      <Route
-        path="/report"
-        element={
-          <PrivateRoute>
-            <ReportList />
-          </PrivateRoute>
-        }
-      />
+        {/* Admin / Office */}
+        <Route
+          path="/officehome"
+          element={
+            <PrivateRoute>
+              <AdminHome />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/adminhome"
+          element={
+            <PrivateRoute>
+              <AdminHome />
+            </PrivateRoute>
+          }
+        />
 
-      {/* Default redirect */}
-      <Route path="*" element={<Home />} />
-    </Routes>
+        {/* Complaints */}
+        <Route
+          path="/complaints"
+          element={
+            <PrivateRoute>
+              <ViewComplaint />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Reports */}
+        <Route
+          path="/report"
+          element={
+            <PrivateRoute>
+              <ReportList />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Feedback */}
+        <Route
+          path="/feedback"
+          element={
+            <PrivateRoute>
+              <Feedback />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Fallback */}
+        <Route path="*" element={<Home />} />
+      </Routes>
+    </>
   );
 }
 
