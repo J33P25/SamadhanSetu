@@ -57,6 +57,15 @@ function App() {
           }
         />
 
+        <Route
+          path="/officer/complaints/:id"
+          element={
+            <PrivateRoute>
+              <ViewComplaint />
+            </PrivateRoute>
+          }
+        />
+
         {/* MyComplaints */}
         <Route
           path="/mycomplaints"
