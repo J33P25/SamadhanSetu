@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from api.views import CreateUserView, AadhaarVerificationView, CustomTokenObtainPairView
+from api.views import CreateUserView, AadhaarVerificationView, CustomTokenObtainPairView, AnnouncementListCreateView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
@@ -18,4 +18,6 @@ urlpatterns = [
 
     # Browsable API login/logout
     path('api-auth/', include('rest_framework.urls')),
+
+    path("api/announcements/", AnnouncementListCreateView.as_view(), name="announcements"),
 ]

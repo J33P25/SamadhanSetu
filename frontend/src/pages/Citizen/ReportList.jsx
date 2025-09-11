@@ -49,6 +49,7 @@ export default function ReportForm() {
     if (!mapRef.current) return;
     if (!leafletMapRef.current) {
       // create map instance
+      // create map instance
       const map = L.map(mapRef.current, {
         center: [0, 0],
         zoom: 13,
@@ -104,6 +105,7 @@ export default function ReportForm() {
       markerRef.current.openPopup();
     }
 
+    // ✅ Reverse geocoding to get district/city
     
     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lng}&format=json`)
       .then((res) => res.json())
@@ -118,6 +120,26 @@ export default function ReportForm() {
         setUserLocation({ city: "", district: "", state: "" });
       });
   }, [coords]);
+
+  useEffect(() => {
+  if (!coords) return;
+
+  async function fetchAddress() {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}`,
+        { headers: { "User-Agent": "SamadhanSetuApp/1.0" } }
+      );
+      const data = await res.json();
+      setAddress(data.display_name || "Unknown location");
+    } catch (err) {
+      console.error("Error fetching address:", err);
+      setAddress("Unknown location");
+    }
+  }
+
+  fetchAddress();
+}, [coords]);
 
   useEffect(() => {
   if (!coords) return;
@@ -738,3 +760,4 @@ function stopCamera() {
     </div>
   );
 }
+

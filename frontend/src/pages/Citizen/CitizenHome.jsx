@@ -31,8 +31,14 @@ export default function CitizenHome() {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        console.log("🔑 Decoded JWT:", decoded); // debug
+        console.log("🔑 Decoded JWT:", decoded);
         setUser(decoded);
+
+        // Optional: check expiry
+        if (decoded.exp * 1000 < Date.now()) {
+          console.error("⚠️ Token expired → redirecting to login");
+          navigate("/login");
+        }
       } catch (err) {
         console.error("Invalid token:", err);
         navigate("/login");
@@ -42,12 +48,50 @@ export default function CitizenHome() {
     }
   }, [navigate]);
 
+  // ✅ Fetch announcements with token
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const token = getAccessToken();
+        if (!token) {
+          console.error("No token found");
+          navigate("/login");
+          return;
+        }
+
+        const res = await fetch("http://localhost:8000/api/announcements/", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.status === 401) {
+          console.error("Unauthorized → redirecting to login");
+          navigate("/login");
+          return;
+        }
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch announcements: ${res.status}`);
+        }
+
+        const data = await res.json();
+        console.log("📢 Announcements:", data);
+        setAnnouncements(data);
+      } catch (err) {
+        console.error("Error fetching announcements:", err);
+      }
+    };
+
+    fetchAnnouncements();
+  }, [navigate]);
+
   const stats = [
     {
       label: "Total Complaints",
       value: complaints.length,
       icon: ClipboardList,
-
       color: "blue",
     },
     {
@@ -108,13 +152,10 @@ export default function CitizenHome() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm font-medium">
-                    {stat.label}
-                  </p>
+                  <p className="text-gray-600 text-sm font-medium">{stat.label}</p>
                   <p className="text-3xl font-bold text-gray-900 mt-2">
                     {stat.value}
                   </p>
-
                 </div>
                 <div
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
@@ -200,9 +241,10 @@ export default function CitizenHome() {
                 Quick Actions
               </h3>
               <div className="space-y-3">
-                <button 
-                onClick={() => navigate("/report")}
-                className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-gradient-to-r from-[#104C64] to-[#C0754D] text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <button
+                  onClick={() => navigate("/report")}
+                  className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-gradient-to-r from-[#104C64] to-[#C0754D] text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
                   <PlusCircle className="w-5 h-5" />
                   <span className="font-medium">Report New Issue</span>
                 </button>

@@ -41,3 +41,16 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.full_name
+
+class Announcement(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    priority = models.CharField(
+        max_length=10,
+        choices=[("High", "High"), ("Medium", "Medium"), ("Low", "Low")],
+        default="Medium"
+    )
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
