@@ -6,9 +6,10 @@ import LoginPage from "./pages/Auth/LoginPage";
 import CitizenHome from "./pages/Citizen/CitizenHome";
 import AdminHome from "./pages/Admin/AdminHome";
 import ViewComplaint from "./pages/Admin/ViewComplaint";
-import PrivateRoute from "./pages/Auth/Privateroute";
 import ReportList from "./pages/Citizen/ReportList";
 import Feedback from "./pages/Citizen/Feedback";
+import PrivateRoute from "./pages/Auth/Privateroute"
+import MyComplaints from "./pages/Citizen/MyComplaints";
 
 function App() {
   return (
@@ -52,6 +53,25 @@ function App() {
           element={
             <PrivateRoute>
               <ViewComplaint />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/officer/complaints/:id"
+          element={
+            <PrivateRoute>
+              <ViewComplaint />
+            </PrivateRoute>
+          }
+        />
+
+        {/* MyComplaints */}
+        <Route
+          path="/mycomplaints"
+          element={
+            <PrivateRoute>
+              <MyComplaints/>
             </PrivateRoute>
           }
         />

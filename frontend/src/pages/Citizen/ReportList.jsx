@@ -49,6 +49,7 @@ export default function ReportForm() {
     if (!mapRef.current) return;
     if (!leafletMapRef.current) {
       // create map instance
+      // create map instance
       const map = L.map(mapRef.current, {
         center: [0, 0],
         zoom: 13,
@@ -105,6 +106,7 @@ export default function ReportForm() {
     }
 
     // ✅ Reverse geocoding to get district/city
+    
     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lng}&format=json`)
       .then((res) => res.json())
       .then((data) => {
@@ -118,6 +120,26 @@ export default function ReportForm() {
         setUserLocation({ city: "", district: "", state: "" });
       });
   }, [coords]);
+
+  useEffect(() => {
+  if (!coords) return;
+
+  async function fetchAddress() {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}`,
+        { headers: { "User-Agent": "SamadhanSetuApp/1.0" } }
+      );
+      const data = await res.json();
+      setAddress(data.display_name || "Unknown location");
+    } catch (err) {
+      console.error("Error fetching address:", err);
+      setAddress("Unknown location");
+    }
+  }
+
+  fetchAddress();
+}, [coords]);
 
   useEffect(() => {
   if (!coords) return;
@@ -155,6 +177,23 @@ export default function ReportForm() {
       localStorage.setItem("uploadedImage", reader.result); // store temporarily
     };
     reader.readAsDataURL(f);
+  }
+
+  async function getNearbyMunicipalOffice(coords) {
+    // Using OpenStreetMap Nominatim API (free)
+    const url = `https://nominatim.openstreetmap.org/search.php?q=municipal+office&format=json&limit=1&lat=${coords.lat}&lon=${coords.lng}`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        return data[0].display_name;
+      }
+      return "Municipal office not found nearby";
+    } catch (err) {
+      console.error("Error fetching municipal office:", err);
+      return "Municipal office not found";
+    }
   }
 
 async function startCamera() {
@@ -718,7 +757,7 @@ function stopCamera() {
           </div>
         </div>
       )}
-    </div>
-  );
+    </div>
+  );
 }
 
