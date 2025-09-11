@@ -104,7 +104,7 @@ export default function ReportForm() {
       markerRef.current.openPopup();
     }
 
-    // ✅ Reverse geocoding to get district/city
+    
     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lng}&format=json`)
       .then((res) => res.json())
       .then((data) => {
@@ -735,6 +735,6 @@ function stopCamera() {
           </div>
         </div>
       )}
-    </div>
-  );
+    </div>
+  );
 }
