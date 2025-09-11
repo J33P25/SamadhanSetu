@@ -1,4 +1,4 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -6,6 +6,8 @@ from .models import User
 from .serializers import UserSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .tokens import CustomTokenObtainPairSerializer
+from .models import Announcement
+from .serializers import AnnouncementSerializer
 
 
 # User signup
@@ -38,3 +40,8 @@ class AadhaarVerificationView(APIView):
             return Response({"message": "Aadhaar verified successfully (mock)"}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"error": "User with this Aadhaar not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+class AnnouncementListCreateView(generics.ListCreateAPIView):
+    queryset = Announcement.objects.all().order_by('-date')
+    serializer_class = AnnouncementSerializer
+    permission_classes = [permissions.AllowAny] 

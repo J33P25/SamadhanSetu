@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 export default function AdminHome() {
   const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState("");
+
 
   const initialComplaints = [
     {
@@ -65,18 +67,41 @@ export default function AdminHome() {
     return () => window.removeEventListener("focus", onFocus);
   }, []);
 
-  const handleAnnouncementSubmit = (e) => {
+  useEffect(() => {
+    fetch("http://localhost:8000/api/announcements/")
+      .then((res) => res.json())
+      .then((data) => setAnnouncements(data))
+      .catch((err) => console.error("Error fetching announcements:", err));
+  }, []);
+
+
+  const handleAnnouncementSubmit = async (e) => {
     e.preventDefault();
-    const now = new Date();
-    const formattedDate = now.toLocaleString();
-    const newEntry = {
-      id: announcements.length + 1,
-      ...newAnnouncement,
-      date: formattedDate,
-    };
-    setAnnouncements([newEntry, ...announcements]);
-    setNewAnnouncement({ title: "", description: "", priority: "Medium" });
+    try {
+      const res = await fetch("http://localhost:8000/api/announcements/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newAnnouncement),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setAnnouncements([saved, ...announcements]);
+        setNewAnnouncement({ title: "", description: "", priority: "Medium" });
+
+        // ✅ Show success message
+        setSuccessMessage("✅ Announcement added successfully!");
+
+        // Auto-clear after 3 seconds
+        setTimeout(() => setSuccessMessage(""), 3000);
+      } else {
+        console.error("Failed to save announcement");
+      }
+    } catch (err) {
+      console.error("Error saving announcement:", err);
+    }
   };
+
+
 
   const priorityColors = {
     High: "bg-red-100 text-red-700",
@@ -141,6 +166,11 @@ export default function AdminHome() {
         <h2 className="text-2xl font-semibold mb-6 text-green-800 tracking-wide">
           Announcements
         </h2>
+        {successMessage && (
+          <div className="mb-4 p-3 rounded-lg bg-green-100 text-green-800 font-semibold shadow">
+            {successMessage}
+          </div>
+        )}
         <form
           onSubmit={handleAnnouncementSubmit}
           className="space-y-5 mb-8 border-b border-green-300 pb-6"
