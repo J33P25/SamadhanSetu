@@ -157,6 +157,23 @@ export default function ReportForm() {
     reader.readAsDataURL(f);
   }
 
+  async function getNearbyMunicipalOffice(coords) {
+    // Using OpenStreetMap Nominatim API (free)
+    const url = `https://nominatim.openstreetmap.org/search.php?q=municipal+office&format=json&limit=1&lat=${coords.lat}&lon=${coords.lng}`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        return data[0].display_name;
+      }
+      return "Municipal office not found nearby";
+    } catch (err) {
+      console.error("Error fetching municipal office:", err);
+      return "Municipal office not found";
+    }
+  }
+
 async function startCamera() {
   try {
     // 1) open the modal first so <video> mounts

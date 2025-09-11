@@ -6,9 +6,9 @@ import LoginPage from "./pages/Auth/LoginPage";
 import CitizenHome from "./pages/Citizen/CitizenHome";
 import AdminHome from "./pages/Admin/AdminHome";
 import ViewComplaint from "./pages/Admin/ViewComplaint";
-import PrivateRoute from "./pages/Auth/Privateroute";
 import ReportList from "./pages/Citizen/ReportList";
 import Feedback from "./pages/Citizen/Feedback";
+import PrivateRoute from "./pages/Auth/Privateroute"
 
 function App() {
   return (
