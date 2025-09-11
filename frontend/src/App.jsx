@@ -8,7 +8,7 @@ import AdminHome from "./pages/Admin/AdminHome";
 import ViewComplaint from "./pages/Admin/ViewComplaint";
 import PrivateRoute from "./pages/Auth/Privateroute";
 import ReportList from "./pages/Citizen/ReportList";
-
+import Feedback from "./pages/Citizen/Feedback";
 function App() {
   return (
     <Routes>     
@@ -49,6 +49,16 @@ function App() {
           </PrivateRoute>
         }
       />
+         <Route
+        path="/Feedback"
+        element={
+          <PrivateRoute>
+            <Feedback />
+          </PrivateRoute>
+        }
+      />
+
+      
 
       {/* Default redirect */}
       <Route path="*" element={<Home />} />
