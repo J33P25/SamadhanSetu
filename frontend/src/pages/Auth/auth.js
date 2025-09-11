@@ -29,6 +29,20 @@ export const api = axios.create({
   baseURL: API_URL,
 });
 
+export const getDecodedUser = () => {
+  const token = getAccessToken();
+  if (!token) return null;
+
+  try {
+    const decoded = jwtDecode(token);
+    console.log("🔑 Decoded JWT:", decoded); // 👈 debug log
+    return decoded;
+  } catch (err) {
+    console.error("Failed to decode JWT:", err);
+    return null;
+  }
+};
+
 // ✅ Attach access token automatically
 api.interceptors.request.use((config) => {
   const token = getAccessToken();

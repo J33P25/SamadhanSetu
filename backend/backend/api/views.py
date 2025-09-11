@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User
 from .serializers import UserSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .tokens import CustomTokenObtainPairSerializer
 
 
 # User signup
@@ -12,6 +14,8 @@ class CreateUserView(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 # Aadhaar verification (mock)
 class AadhaarVerificationView(APIView):
