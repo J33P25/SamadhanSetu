@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
-from api.views import CreateUserView, AadhaarVerificationView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from api.views import CreateUserView, AadhaarVerificationView, CustomTokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -13,7 +13,7 @@ urlpatterns = [
     path('api/user/verify-aadhaar/', AadhaarVerificationView.as_view(), name='verify-aadhaar'),
 
     # JWT Auth
-    path('api/token/', TokenObtainPairView.as_view(), name='get_token'),
+    path('api/token/', CustomTokenObtainPairView.as_view(),  name='get_token'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='refresh'),
 
     # Browsable API login/logout

@@ -11,12 +11,36 @@ import ReportList from "./pages/Citizen/ReportList";
 
 function App() {
   return (
-    <Routes>      
+    <Routes>     
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/citizen/home" element={<CitizenHome fullName="Karthik" />} />
-      <Route path="/officer/home" element={<AdminHome />} />
-      <Route path="/officer/complaints/:id" element={<ViewComplaint />} />
+
+      <Route
+        path="/citizenhome"
+        element={
+          <PrivateRoute>
+            <CitizenHome />
+          </PrivateRoute>
+        }
+      />
+
+       <Route
+        path="/officehome"
+        element={
+          <PrivateRoute>
+            <AdminHome />
+          </PrivateRoute>
+        }
+      />
+       <Route
+        path="/complaints"
+        element={
+          <PrivateRoute>
+            <ViewComplaint />
+          </PrivateRoute>
+        }
+      />
+      
       <Route
         path="/report"
         element={
@@ -27,7 +51,7 @@ function App() {
       />
 
       {/* Default redirect */}
-      <Route path="*" element={<LoginPage />} />
+      <Route path="*" element={<Home />} />
     </Routes>
   );
 }
