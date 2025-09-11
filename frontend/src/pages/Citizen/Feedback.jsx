@@ -1,11 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-// Single-file React component using Tailwind CSS
-// Default export component: CitizenFeedback
-// - Tailwind must be available in the host project (postcss/tailwind configured)
-// - This file uses Tailwind utility classes to reproduce the original layout and behaviour
-
-export default function CitizenFeedback() {
+export default function Feedback() {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [formData, setFormData] = useState({
@@ -24,6 +20,8 @@ export default function CitizenFeedback() {
   });
   const ratingRef = useRef(null);
   const formRef = useRef(null);
+
+  const navigate = useNavigate();
 
   // Keep the hidden rating input in sync (for any non-React consumers)
   useEffect(() => {
@@ -124,7 +122,6 @@ export default function CitizenFeedback() {
       {/* Header */}
       <header className="bg-gradient-to-r from-[#0b3f35] to-[#053a2b] text-white p-6 rounded-xl shadow-xl mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-11 h-9 rounded-md bg-gradient-to-b from-[#C6C6D0] to-white border border-black/6 shadow-inner" aria-hidden />
           <h1 className="text-lg font-bold m-0">Citizen Feedback</h1>
         </div>
         <p className="m-0 text-sm text-white/95">Please let us know how your reported issue was handled. Your feedback helps improve district services.</p>
@@ -148,7 +145,7 @@ export default function CitizenFeedback() {
         {/* Outcome */}
         <fieldset className="mb-4 border-0 p-0">
           <legend className="text-[0.98rem] font-semibold text-[#0b3f35] mb-2">Was the issue resolved?</legend>
-          <div className="flex flex-wrap gap-3">
+          <div className=" text-[black] flex flex-wrap gap-3">
             {[
               ["yes", "Yes — fully resolved"],
               ["partial", "Partially resolved"],
@@ -166,12 +163,12 @@ export default function CitizenFeedback() {
         <fieldset className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-0 p-0">
           <legend className="text-[0.98rem] font-semibold text-[#0b3f35] mb-2 col-span-full">Time taken</legend>
           <div>
-            <label className="block text-sm">Date you first reported the issue</label>
-            <input type="date" name="first_reported" value={formData.first_reported} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg border border-black/8 bg-white text-sm outline-none focus:shadow-lg focus:translate-y-[-2px] focus:border-[#0b3f35]/60" />
+            <label className="text-[#0b3f35] block text-sm">Date you first reported the issue</label>
+            <input type="date" name="first_reported" value={formData.first_reported} onChange={handleInputChange} className=" w-full px-3 py-2 rounded-lg border border-black/8 bg-white text-sm outline-none focus:shadow-lg focus:translate-y-[-2px] focus:border-[#0b3f35]/60 text-[#0b3f35]" />
           </div>
           <div>
-            <label className="block text-sm">How long did it take to address?</label>
-            <div className="flex flex-wrap gap-3 mt-2">
+            <label className="text-[#0b3f35] block text-sm">How long did it take to address?</label>
+            <div className="text-[#0b3f35] flex flex-wrap gap-3 mt-2">
               {[
                 ["none", "No delay"],
                 ["<1week", "Less than 1 week"],
@@ -191,7 +188,7 @@ export default function CitizenFeedback() {
         <fieldset className="mb-4 border-0 p-0">
           <legend className="text-[0.98rem] font-semibold text-[#0b3f35] mb-2">Government action</legend>
           <label className="block text-sm">Did staff visit or take visible action?</label>
-          <div className="flex flex-wrap gap-3 mt-2">
+          <div className="text-[#0b3f35] flex flex-wrap gap-3 mt-2">
             {[["yes", "Yes"], ["no", "No"], ["unknown", "Not sure"]].map(([val, label]) => (
               <label key={val} className="inline-flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-black/6 cursor-pointer">
                 <input type="radio" name="staff_act" value={val} checked={formData.staff_act === val} onChange={handleInputChange} required className="w-4 h-4 accent-[#0b3f35]" />
@@ -206,7 +203,7 @@ export default function CitizenFeedback() {
           <legend className="text-[0.98rem] font-semibold text-[#0b3f35] mb-2 col-span-full">About the issue</legend>
           <div>
             <label className="block text-sm">Severity of the issue</label>
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="text-[#0b3f35] flex flex-wrap gap-2 mt-2">
               {[["low", "Low"], ["medium", "Medium"], ["high", "High"]].map(([val, label]) => (
                 <label key={val} className="inline-flex items-center gap-2 bg-white rounded-md px-2 py-2 border border-black/6 cursor-pointer text-sm">
                   <input type="radio" name="severity" value={val} checked={formData.severity === val} onChange={handleInputChange} required className="w-3.5 h-3.5 accent-[#0b3f35]" />
@@ -269,32 +266,16 @@ export default function CitizenFeedback() {
           <textarea name="suggestions" value={formData.suggestions} onChange={handleInputChange} rows={5} className="w-full mt-2 px-3 py-2 rounded-lg border border-black/8 bg-white text-sm outline-none focus:shadow-lg focus:translate-y-[-2px] focus:border-[#0b3f35]/60" placeholder="Your suggestions" />
         </fieldset>
 
-        {/* Attachments */}
-        <fieldset className="mb-4 border-0 p-0">
-          <legend className="text-[0.98rem] font-semibold text-[#0b3f35] mb-2">Attachments (optional)</legend>
-          <label className="block text-sm">Upload photo or document</label>
-          <input type="file" name="evidence" onChange={handleInputChange} accept="image/*,application/pdf" multiple className="mt-2" />
-        </fieldset>
 
-        {/* Consent */}
-        <fieldset className="mb-4 border-0 p-0">
-          <div className="flex flex-col gap-2">
-            <label className="inline-flex items-center gap-3 font-semibold">
-              <input id="consent" name="consent" type="checkbox" checked={formData.consent} onChange={handleInputChange} className="w-4 h-4 transform scale-105" required />
-              <span>I consent to being contacted for follow-up regarding this report.</span>
-            </label>
-            <p className="text-sm text-[#6b6d72]">We will only use your contact details for follow-up. See our <a href="#" target="_blank" rel="noopener noreferrer" className="underline">privacy policy</a>.</p>
-          </div>
-        </fieldset>
 
         {/* Actions */}
         <div className="flex gap-3 justify-end mt-3 flex-col md:flex-row-reverse md:items-center">
-          <button type="submit" className="px-4 py-2 rounded-lg font-bold bg-gradient-to-r from-[#0b3f35] to-[#053a2b] text-white shadow-md">Submit Feedback</button>
+          <button 
+          onClick = {() => navigate('/citizenhome')}
+          type="submit" className="px-4 py-2 rounded-lg font-bold bg-gradient-to-r from-[#0b3f35] to-[#053a2b] text-white shadow-md">Submit Feedback</button>
           <button type="reset" onClick={() => { setRating(0); setFormData(prev => ({ ...prev, consent: false })); formRef.current.reset(); }} className="px-4 py-2 rounded-lg font-bold border border-black/6 text-[#6b6d72] bg-transparent">Reset</button>
         </div>
       </form>
-
-      <footer className="mt-3 text-sm text-[#6b6d72]">If this is urgent, please contact the relevant department directly.</footer>
     </main>
   );
 }
