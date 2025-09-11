@@ -263,45 +263,8 @@ export default function CitizenHome() {
           </div>
         </div>
 
-        {/* Complaints Table */}
-        <div className="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-[#104C64] to-[#C0754D] p-6 text-white">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold flex items-center gap-3">
-                <ClipboardList className="w-6 h-6" />
-                Recent Complaints
-              </h2>
-              <div className="flex items-center gap-3">
-                <button className="flex items-center gap-2 px-3 py-2 bg-[#104C64]/60 rounded-lg text-sm">
-                  <Search className="w-4 h-4" />
-                  Search
-                </button>
-                <button className="flex items-center gap-2 px-3 py-2 bg-[#104C64]/60 rounded-lg text-sm">
-                  <Filter className="w-4 h-4" />
-                  Filter
-                </button>
-              </div>
-            </div>
-          </div>
-
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#C6C6D0]">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                    Issue Description
-                  </th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
-                    Date Submitted
-                  </th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
               <tbody className="divide-y divide-gray-200">
                 {complaints.map((complaint, idx) => (
                   <tr key={idx} className="hover:bg-gray-50 transition-colors">
@@ -350,19 +313,7 @@ export default function CitizenHome() {
               </tbody>
             </table>
           </div>
-
-          <div className="px-6 py-4 bg-[#C6C6D0]/40 border-t">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-600">
-                Showing {complaints.length} complaints
-              </p>
-              <button className="text-[#104C64] hover:text-[#C0754D] text-sm font-medium">
-                View All Complaints →
-              </button>
-            </div>
-          </div>
         </div>
       </div>
-    </div>
   );
 }
