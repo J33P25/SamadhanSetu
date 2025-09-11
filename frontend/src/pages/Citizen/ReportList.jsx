@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import jsPDF from "jspdf";
-import { api,getAccessToken } from "../Auth/auth";
+import { Camera, FolderUp } from "lucide-react";
 
 const CATEGORIES = [
   "land and revenue",
@@ -17,11 +17,11 @@ export default function ReportForm() {
   const [description, setDescription] = useState("");
   const [coords, setCoords] = useState(null);
   const [geoStatus, setGeoStatus] = useState("idle");
-  const [municipalOffice, setMunicipalOffice] = useState("Fetching municipal office...");
+  const [showCamera, setShowCamera] = useState(false);
+  const [address, setAddress] = useState("");
   const [userLocation, setUserLocation] = useState({ city: "", district: "", state: "" });
 
-
-
+    
   const mapRef = useRef(null); 
   const leafletMapRef = useRef(null); 
   const markerRef = useRef(null);
@@ -157,7 +157,6 @@ export default function ReportForm() {
     reader.readAsDataURL(f);
   }
 
- HEAD
   async function getNearbyMunicipalOffice(coords) {
     // Using OpenStreetMap Nominatim API (free)
     const url = `https://nominatim.openstreetmap.org/search.php?q=municipal+office&format=json&limit=1&lat=${coords.lat}&lon=${coords.lng}`;
@@ -173,16 +172,7 @@ export default function ReportForm() {
       console.error("Error fetching municipal office:", err);
       return "Municipal office not found";
     }
-useEffect(() => {
-  // If modal is open and a stream already exists, attach it to the video element
-  if (showCamera && streamRef.current && videoRef.current) {
-    if (videoRef.current.srcObject !== streamRef.current) {
-      videoRef.current.srcObject = streamRef.current;
-      // some browsers require explicit play
-      videoRef.current.play().catch(() => {/* ignore play error */});
-    }
   }
-}, [showCamera]);
 
 async function startCamera() {
   try {
@@ -233,89 +223,99 @@ function stopCamera() {
   setShowCamera(false);
 }
 
-function takePhoto() {
-  if (!videoRef.current || !canvasRef.current) return;
-  
-  const video = videoRef.current;
-  const canvas = canvasRef.current;
-  const ctx = canvas.getContext("2d");
-  
-  // Set canvas dimensions to match video
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  
-  // Draw video frame to canvas
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
-  // Convert to blob and create preview
-  canvas.toBlob((blob) => {
-    if (blob) {
-      setImagePreview(URL.createObjectURL(blob));
-      stopCamera(); // ✅ stop immediately after capture
-    }
-  }, "image/jpeg", 0.8);
-}
+  function takePhoto() {
+    if (!videoRef.current || !canvasRef.current) return;
+    
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        setImagePreview(url);
 
+        // ✅ also save as base64 for PDF
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          localStorage.setItem("capturedImage", reader.result);
+        };
+        reader.readAsDataURL(blob);
+
+        stopCamera();
+      }
+    }, "image/jpeg", 0.8);
+  }
 
   function onSubmit(e) {
     e.preventDefault();
-    alert("Report submitted (demo only).");
+
+    if (!category || !description || !coords) {
+      alert("Please fill all required fields before submitting.");
+      return;
+    }
+
+    const doc = new jsPDF();
+    const today = new Date().toLocaleDateString();
+    const userFullName = localStorage.getItem("user_full_name");
+
+    const letter = `
+  To,
+  Municipal Office,
+  ${userLocation.district},
+  ${userLocation.state}
+
+  Subject: Complaint Regarding ${category}
+
+  Respected Sir/Madam,
+
+  I am writing to formally lodge a complaint regarding the following issue:
+
+  ${description}
+
+  The issue has been observed at the following location:
+  Latitude: ${coords.lat.toFixed(6)}, Longitude: ${coords.lng.toFixed(6)}
+
+  I kindly request your immediate attention and necessary action in resolving this matter
+  at the earliest possible time. I would be grateful for your prompt intervention.
+
+  Thank you.
+
+  Yours sincerely,
+  ${userFullName || "Citizen"}
+  Date: ${today}
+
+  You can find the necessary image corresponding to the issue below :-
+  `;
+
+    doc.setFont("Times", "Roman");
+    doc.setFontSize(12);
+    doc.text(letter, 20, 30, { maxWidth: 170 });
+
+      // Add images if available
+    const uploadedImg = localStorage.getItem("uploadedImage");
+    const capturedImg = localStorage.getItem("capturedImage");
+
+    if (uploadedImg || capturedImg) {
+      doc.addPage();
+      let y = 40;
+
+      if (uploadedImg) {
+        doc.addImage(uploadedImg, "JPEG", 20, y, 160, 120);
+        y += 130; // move down for next image
+      }
+
+      if (capturedImg) {
+        doc.addImage(capturedImg, "JPEG", 20, y, 160, 120);
+      }
+    }
+    doc.save("complaint_letter.pdf");
   }
-
-
-  function onSubmit(e) {
-  e.preventDefault();
-
-  if (!category || !description || !coords) {
-    alert("Please fill all required fields before submitting.");
-    return;
-  }
-
-  const doc = new jsPDF();
-  const today = new Date().toLocaleDateString();
-  const userFullName = localStorage.getItem("user_full_name");
-
-  const letter = `
-To,
-Municipal Office,
-${userLocation.district},
-${userLocation.state}
-
-Subject: Complaint Regarding ${category}
-
-Respected Sir/Madam,
-
-I am writing to formally lodge a complaint regarding the following issue:
-
-${description}
-
-The issue has been observed at the following location:
-Latitude: ${coords.lat.toFixed(6)}, Longitude: ${coords.lng.toFixed(6)}
-
-I kindly request your immediate attention and necessary action in resolving this matter
-at the earliest possible time. I would be grateful for your prompt intervention.
-
-Thank you.
-
-Yours sincerely,
-${userFullName || "Citizen"}
-Date: ${today}
-
-You can find the necessary image corresponding to the issue below :-
-`;
-
-  doc.setFont("Times", "Roman");
-  doc.setFontSize(12);
-  doc.text(letter, 20, 30, { maxWidth: 170 });
-
-  const imgData = localStorage.getItem("uploadedImage");
-  if (imgData) {
-    doc.addPage();
-    doc.addImage(imgData, "JPEG", 20, 40, 160, 120);
-  }
-
-  doc.save("complaint_letter.pdf");
-}
 
 
 
@@ -737,5 +737,4 @@ You can find the necessary image corresponding to the issue below :-
       )}
     </div>
   );
-}
 }
