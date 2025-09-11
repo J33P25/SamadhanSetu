@@ -60,6 +60,8 @@ INSTALLED_APPS = [
     'corsheaders'
 ]
 
+AUTH_USER_MODEL = 'api.User'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -103,7 +105,6 @@ DATABASES = {
         'PORT': '5432',                              # default PostgreSQL port
     }
 }
-
 
 
 # Password validation
