@@ -40,43 +40,67 @@ const Home = () => {
   }, [slides.length]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0D1D25' }}>
+    <div className="min-h-screen bg-gradient-to-br from-[#0b3f35] via-[#134e42] to-[#1a5a4e] relative overflow-hidden">
+      
+      {/* Decorative Background Elements */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-orange-400 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-48 h-48 bg-orange-300 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-teal-300 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        <div className="absolute bottom-20 right-1/3 w-24 h-24 bg-orange-500 rounded-full blur-3xl animate-pulse delay-3000"></div>
+      </div>
+
       {/* Header */}
-      <header className="border-b" style={{ backgroundColor: '#104C64', borderColor: '#C6C6D0' }}>
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-2" style={{ color: '#C6C6D0' }}>
-              Samadhan Sethu
-            </h1>
-            <p className="text-lg" style={{ color: '#D59D80' }}>
-              Connecting Communities Through Technology
-            </p>
+      <header className="relative z-10 bg-gradient-to-r from-[#0b3f35] to-[#134e42] shadow-2xl border-b border-orange-200/20">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="text-center relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-400/5 to-teal-400/5 blur-xl rounded-3xl"></div>
+            <div className="relative">
+              <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-orange-300 via-orange-200 to-orange-100 bg-clip-text text-transparent drop-shadow-lg">
+                Samadhan Sethu
+              </h1>
+              <p className="text-xl font-medium text-orange-200/90 tracking-wide">
+                Connecting Communities Through Technology
+              </p>
+              <div className="mt-4 w-24 h-1 bg-gradient-to-r from-orange-400 to-orange-300 mx-auto rounded-full shadow-lg"></div>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* NEW: Complaint Intro Section */}
-        <div className="bg-gradient-to-r from-[#104C64] to-[#053a2b] text-[#C6C6D0] rounded-2xl shadow-lg p-10 mb-12">
-          <h2 className="text-3xl font-bold mb-4">Raise Your Voice, Shape Your Locality</h2>
-          <p className="text-lg text-[#D59D80] mb-6 leading-relaxed">
-            Have you noticed issues in your area—like broken roads, waste management, 
-            or lack of basic services? Register a complaint and let the authorities know. 
-            Together, we can make our communities stronger and more accountable.
-          </p>
-          <button
-            onClick={() => navigate('/login')}
-            className="px-6 py-3 rounded-xl font-semibold shadow-md transition 
-                       bg-gradient-to-r from-[#C0754D] to-[#B6410F] text-white 
-                       hover:scale-105"
-          >
-            Register a Complaint
-          </button>
+      <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
+        {/* Enhanced Complaint Intro Section */}
+        <div className="bg-gradient-to-br from-[#0b3f35] via-[#134e42] to-[#1a5a4e] text-white rounded-3xl shadow-2xl p-12 mb-16 border border-orange-200/10 relative overflow-hidden">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-orange-400/10 to-transparent rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-400/10 to-transparent rounded-full blur-3xl"></div>
+          
+          <div className="relative z-10">
+            <h2 className="text-4xl font-bold mb-6 text-orange-100">
+              Raise Your Voice, Shape Your Locality
+            </h2>
+            <p className="text-xl text-orange-200/90 mb-8 leading-relaxed max-w-4xl">
+              Have you noticed issues in your area—like broken roads, waste management, 
+              or lack of basic services? Register a complaint and let the authorities know. 
+              Together, we can make our communities stronger and more accountable.
+            </p>
+            <button
+              onClick={() => navigate('/login')}
+              className="group relative px-8 py-4 rounded-2xl font-bold text-lg shadow-2xl transition-all duration-300 
+                         bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500 text-white 
+                         hover:from-orange-400 hover:via-orange-300 hover:to-orange-400
+                         hover:scale-105 hover:shadow-orange-400/30
+                         border border-orange-300/20"
+            >
+              <span className="relative z-10">Register a Complaint</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+            </button>
+          </div>
         </div>
 
-        {/* Infinite Image Slider */}
-        <div className="relative overflow-hidden rounded-3xl shadow-2xl" style={{ height: '75vh' }}>
-          {/* Background Blur Layer */}
+        {/* Enhanced Image Slider */}
+        <div className="relative overflow-hidden rounded-3xl shadow-2xl border border-orange-200/20" style={{ height: '75vh' }}>
+          {/* Enhanced Background Blur Layer */}
           <div className="absolute inset-0">
             {slides.map((slide, index) => (
               <div
@@ -94,17 +118,17 @@ const Home = () => {
                   className="absolute inset-0"
                   style={{
                     background: `linear-gradient(135deg, 
-                      rgba(13, 29, 37, 0.85) 0%, 
-                      rgba(16, 76, 100, 0.75) 30%, 
-                      rgba(192, 117, 77, 0.65) 60%, 
-                      rgba(182, 65, 15, 0.75) 100%)`
+                      rgba(11, 63, 53, 0.9) 0%, 
+                      rgba(19, 78, 66, 0.85) 30%, 
+                      rgba(26, 90, 78, 0.8) 60%, 
+                      rgba(245, 158, 11, 0.3) 100%)`
                   }}
                 ></div>
               </div>
             ))}
           </div>
 
-          {/* Main Content Sliding Container */}
+          {/* Enhanced Main Content Sliding Container */}
           <div className="relative z-10 h-full flex items-center">
             <div
               className="flex transition-transform duration-1000 ease-in-out w-full"
@@ -116,66 +140,52 @@ const Home = () => {
               {slides.map((slide, index) => (
                 <div key={index} className="flex-shrink-0 w-full flex items-center justify-center px-8">
                   <div className="text-center max-w-5xl">
-                    <div className="relative inline-block mb-8">
+                    <div className="relative inline-block mb-10">
                       <div
-                        className="p-2 rounded-3xl shadow-2xl"
+                        className="p-3 rounded-3xl shadow-2xl transform hover:scale-105 transition-all duration-500"
                         style={{
-                          background: `linear-gradient(135deg, #C0754D, #B6410F)`,
+                          background: `linear-gradient(135deg, #f59e0b, #d97706, #92400e)`,
                         }}
                       >
-                        <div className="relative overflow-hidden rounded-2xl">
+                        <div className="relative overflow-hidden rounded-2xl ring-4 ring-orange-300/30">
                           <img
                             src={slide.image}
                             alt={slide.title}
-                            className="w-96 h-64 object-cover transform hover:scale-105 transition-transform duration-500"
+                            className="w-96 h-64 object-cover transform hover:scale-110 transition-transform duration-700"
                             style={{
-                              filter: 'brightness(1.1) contrast(1.1)',
+                              filter: 'brightness(1.15) contrast(1.1) saturate(1.1)',
                             }}
                           />
                           <div
-                            className="absolute inset-0"
-                            style={{
-                              background: `linear-gradient(135deg, 
-                                rgba(13, 29, 37, 0.1) 0%, 
-                                rgba(16, 76, 100, 0.1) 50%, 
-                                rgba(192, 117, 77, 0.1) 100%)`
-                            }}
+                            className="absolute inset-0 bg-gradient-to-tr from-teal-900/20 via-transparent to-orange-900/20"
                           ></div>
                         </div>
                       </div>
-                      <div
-                        className="absolute -top-4 -left-4 w-8 h-8 rounded-full opacity-80"
-                        style={{ backgroundColor: '#D59D80' }}
-                      ></div>
-                      <div
-                        className="absolute -bottom-4 -right-4 w-6 h-6 rounded-full opacity-60"
-                        style={{ backgroundColor: '#C0754D' }}
-                      ></div>
+                      {/* Enhanced Decorative Elements */}
+                      <div className="absolute -top-6 -left-6 w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full opacity-80 animate-bounce"></div>
+                      <div className="absolute -bottom-6 -right-6 w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-500 rounded-full opacity-70 animate-pulse"></div>
+                      <div className="absolute top-4 -right-8 w-6 h-6 bg-gradient-to-br from-orange-300 to-orange-400 rounded-full opacity-60 animate-ping"></div>
                     </div>
+                    
                     <h2
-                      className="text-5xl font-bold mb-4 leading-tight"
+                      className="text-5xl font-bold mb-6 leading-tight bg-gradient-to-r from-orange-200 via-orange-100 to-white bg-clip-text text-transparent"
                       style={{
-                        color: '#C6C6D0',
-                        textShadow: '3px 3px 6px rgba(13, 29, 37, 0.9)',
+                        textShadow: '3px 3px 6px rgba(11, 63, 53, 0.9)',
                         letterSpacing: '-0.02em'
                       }}
                     >
                       {slide.title}
                     </h2>
                     <p
-                      className="text-xl font-medium leading-relaxed max-w-2xl mx-auto"
+                      className="text-xl font-medium leading-relaxed max-w-2xl mx-auto text-orange-200/95"
                       style={{
-                        color: '#D59D80',
-                        textShadow: '2px 2px 4px rgba(13, 29, 37, 0.8)'
+                        textShadow: '2px 2px 4px rgba(11, 63, 53, 0.8)'
                       }}
                     >
                       {slide.description}
                     </p>
-                    <div className="mt-6 flex justify-center">
-                      <div
-                        className="w-24 h-1 rounded-full opacity-80"
-                        style={{ backgroundColor: '#C0754D' }}
-                      ></div>
+                    <div className="mt-8 flex justify-center">
+                      <div className="w-32 h-1.5 bg-gradient-to-r from-orange-400 via-orange-300 to-orange-400 rounded-full shadow-lg opacity-90"></div>
                     </div>
                   </div>
                 </div>
@@ -183,21 +193,21 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-2" style={{ backgroundColor: 'rgba(198, 198, 208, 0.2)' }}>
+          {/* Enhanced Progress Bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-r from-teal-900/30 to-orange-900/30 backdrop-blur-sm">
             <div
-              className="h-full transition-all duration-500 rounded-full"
+              className="h-full transition-all duration-500 rounded-full shadow-lg"
               style={{
-                background: `linear-gradient(90deg, #D59D80, #C0754D)`,
+                background: `linear-gradient(90deg, #f59e0b, #d97706, #b45309)`,
                 width: `${((currentSlide + 1) / slides.length) * 100}%`,
-                boxShadow: '0 0 10px rgba(213, 157, 128, 0.5)'
+                boxShadow: '0 0 20px rgba(245, 158, 11, 0.6)'
               }}
             ></div>
           </div>
 
-          {/* Navigation Dots */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-            <div className="flex space-x-4">
+          {/* Enhanced Navigation Dots */}
+          <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2">
+            <div className="flex space-x-4 bg-black/20 backdrop-blur-md rounded-full px-6 py-3 border border-white/10">
               {slides.map((_, index) => (
                 <button
                   key={index}
@@ -211,19 +221,19 @@ const Home = () => {
                       index === currentSlide ? 'opacity-100' : 'opacity-60 hover:opacity-80'
                     }`}
                     style={{
-                      backgroundColor: index === currentSlide ? '#D59D80' : '#C6C6D0',
+                      backgroundColor: index === currentSlide ? '#f59e0b' : '#d1d5db',
                       boxShadow: index === currentSlide
-                        ? '0 0 20px rgba(213, 157, 128, 0.6)'
-                        : 'none'
+                        ? '0 0 25px rgba(245, 158, 11, 0.8), inset 0 0 10px rgba(245, 158, 11, 0.3)'
+                        : '0 0 10px rgba(0,0,0,0.2)'
                     }}
                   />
                   {index === currentSlide && (
                     <div
-                      className="absolute inset-0 rounded-full animate-pulse"
+                      className="absolute inset-0 rounded-full animate-ping"
                       style={{
-                        backgroundColor: '#D59D80',
-                        opacity: 0.3,
-                        transform: 'scale(1.5)'
+                        backgroundColor: '#f59e0b',
+                        opacity: 0.4,
+                        transform: 'scale(1.8)'
                       }}
                     />
                   )}
@@ -232,41 +242,59 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Floating decorative elements */}
-          <div className="absolute top-1/4 left-12">
-            <div
-              className="w-20 h-20 rounded-full opacity-20 animate-pulse"
-              style={{ backgroundColor: '#C0754D' }}
-            ></div>
+          {/* Enhanced floating decorative elements */}
+          <div className="absolute top-1/4 left-12 animate-float">
+            <div className="w-24 h-24 bg-gradient-to-br from-orange-400/30 to-orange-500/20 rounded-full blur-sm animate-pulse"></div>
           </div>
-          <div className="absolute bottom-1/4 right-16">
-            <div
-              className="w-16 h-16 rounded-full opacity-15 animate-pulse"
-              style={{
-                backgroundColor: '#B6410F',
-                animationDelay: '1s'
-              }}
-            ></div>
+          <div className="absolute bottom-1/4 right-16 animate-float-delayed">
+            <div className="w-20 h-20 bg-gradient-to-br from-teal-400/25 to-teal-500/15 rounded-full blur-sm animate-pulse"></div>
+          </div>
+          <div className="absolute top-1/3 right-24 animate-float-slow">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-300/20 to-orange-400/10 rounded-full blur-sm animate-pulse"></div>
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="mt-16 text-center">
-          <div className="max-w-4xl mx-auto">
-            <h3 className="text-3xl font-bold mb-6" style={{ color: '#C6C6D0' }}>
+        {/* Enhanced Bottom Section */}
+        <div className="mt-20 text-center">
+          <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#0b3f35]/50 to-[#134e42]/30 rounded-3xl p-12 border border-orange-200/10 backdrop-blur-sm">
+            <h3 className="text-4xl font-bold mb-8 bg-gradient-to-r from-orange-200 to-orange-100 bg-clip-text text-transparent">
               Building Trust with Digital Engagement
             </h3>
-            <p className="text-xl leading-relaxed mb-8" style={{ color: '#D59D80' }}>
+            <p className="text-xl leading-relaxed mb-10 text-orange-200/90 max-w-3xl mx-auto">
               Experience the future of citizen-government interaction with our comprehensive platform
               that bridges the gap between communities and civic authorities through smart technology solutions.
             </p>
-            <div
-              className="w-32 h-1 mx-auto rounded-full"
-              style={{ backgroundColor: '#C0754D' }}
-            ></div>
+            <div className="flex justify-center">
+              <div className="w-40 h-1.5 bg-gradient-to-r from-orange-400 via-orange-300 to-orange-400 rounded-full shadow-lg"></div>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Custom CSS animations */}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+        @keyframes float-delayed {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-15px); }
+        }
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        .animate-float-delayed {
+          animation: float-delayed 8s ease-in-out infinite 2s;
+        }
+        .animate-float-slow {
+          animation: float-slow 10s ease-in-out infinite 4s;
+        }
+      `}</style>
     </div>
   );
 };
