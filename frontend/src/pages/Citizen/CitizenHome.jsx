@@ -206,7 +206,9 @@ export default function CitizenHome() {
                   <PlusCircle className="w-5 h-5" />
                   <span className="font-medium">Report New Issue</span>
                 </button>
-                <button className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-gradient-to-r from-[#104C64] to-[#C0754D] text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <button 
+                onClick={() => navigate("/mycomplaints")}
+                className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-gradient-to-r from-[#104C64] to-[#C0754D] text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                   <ClipboardList className="w-5 h-5" />
                   <span className="font-medium">My Complaints</span>
                 </button>
