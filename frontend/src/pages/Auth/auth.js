@@ -6,10 +6,15 @@ const API_URL = import.meta.env.VITE_API_URL; // 👈 from .env
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
 
-export const setTokens = (access, refresh) => {
+export const setTokens = (access, refresh, fullName = null) => {
   localStorage.setItem(ACCESS_TOKEN_KEY, access);
   localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
+
+  if (fullName) {
+    localStorage.setItem("user_full_name", fullName);
+  }
 };
+
 
 export const getAccessToken = () => localStorage.getItem(ACCESS_TOKEN_KEY);
 export const getRefreshToken = () => localStorage.getItem(REFRESH_TOKEN_KEY);

@@ -150,9 +150,6 @@ export default function CitizenHome() {
                     <Volume2 className="w-6 h-6" />
                     Latest Announcements
                   </h2>
-                  <button className="text-gray-200 hover:text-white transition-colors text-sm font-medium">
-                    View All →
-                  </button>
                 </div>
               </div>
               <div className="p-6 space-y-4">
