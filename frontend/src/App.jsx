@@ -9,6 +9,7 @@ import ViewComplaint from "./pages/Admin/ViewComplaint";
 import ReportList from "./pages/Citizen/ReportList";
 import Feedback from "./pages/Citizen/Feedback";
 import PrivateRoute from "./pages/Auth/Privateroute"
+import MyComplaints from "./pages/Citizen/MyComplaints";
 
 function App() {
   return (
@@ -52,6 +53,16 @@ function App() {
           element={
             <PrivateRoute>
               <ViewComplaint />
+            </PrivateRoute>
+          }
+        />
+
+        {/* MyComplaints */}
+        <Route
+          path="/mycomplaints"
+          element={
+            <PrivateRoute>
+              <MyComplaints/>
             </PrivateRoute>
           }
         />
