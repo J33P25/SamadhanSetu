@@ -1,12 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-<<<<<<< HEAD
 import jsPDF from "jspdf";
 import { api,getAccessToken } from "../Auth/auth";
-=======
-import {Camera,FolderUp} from "lucide-react";
->>>>>>> 06a4f0575b5fd225e665a4d3bf461e808470f98f
 
 const CATEGORIES = [
   "land and revenue",
@@ -21,17 +17,11 @@ export default function ReportForm() {
   const [description, setDescription] = useState("");
   const [coords, setCoords] = useState(null);
   const [geoStatus, setGeoStatus] = useState("idle");
-<<<<<<< HEAD
   const [municipalOffice, setMunicipalOffice] = useState("Fetching municipal office...");
   const [userLocation, setUserLocation] = useState({ city: "", district: "", state: "" });
 
 
 
-=======
-  const [showCamera, setShowCamera] = useState(false);
-  const [address, setAddress] = useState("");
-    
->>>>>>> 06a4f0575b5fd225e665a4d3bf461e808470f98f
   const mapRef = useRef(null); 
   const leafletMapRef = useRef(null); 
   const markerRef = useRef(null);
@@ -747,4 +737,5 @@ You can find the necessary image corresponding to the issue below :-
       )}
     </div>
   );
+}
 }
