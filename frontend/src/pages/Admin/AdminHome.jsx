@@ -1,9 +1,10 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminHome() {
   const navigate = useNavigate();
-  const [complaints, setComplaints] = useState([
+
+  const initialComplaints = [
     {
       id: 1,
       citizen: "Arjun",
@@ -20,7 +21,15 @@ export default function AdminHome() {
       description: "Garbage piled up near park gate, attracting stray dogs.",
       image: "/mocks/garbage.jpg",
     },
-  ]);
+  ];
+
+  const [complaints, setComplaints] = useState(() =>
+    initialComplaints.map((c) => {
+      const stored = localStorage.getItem(`complaint-${c.id}`);
+      return stored ? JSON.parse(stored) : c;
+    })
+  );
+
   const [announcements, setAnnouncements] = useState([
     {
       id: 1,
@@ -30,24 +39,32 @@ export default function AdminHome() {
       priority: "High",
     },
   ]);
+
   const [feedbacks] = useState([
     { id: 1, citizen: "Rahul", message: "Quick resolution on road issue. Thanks!" },
     { id: 2, citizen: "Sneha", message: "Garbage pickup needs to be more frequent." },
   ]);
+
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: "",
     description: "",
     priority: "Medium",
   });
 
-  // update complaint status
-  const updateStatus = (id, newStatus) => {
-    setComplaints(
-      complaints.map((c) => (c.id === id ? { ...c, status: newStatus } : c))
-    );
-  };
+  // Sync complaints from localStorage when page regains focus
+  useEffect(() => {
+    const onFocus = () => {
+      setComplaints((prev) =>
+        prev.map((c) => {
+          const stored = localStorage.getItem(`complaint-${c.id}`);
+          return stored ? JSON.parse(stored) : c;
+        })
+      );
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, []);
 
-  // add new announcement
   const handleAnnouncementSubmit = (e) => {
     e.preventDefault();
     const now = new Date();
@@ -61,7 +78,6 @@ export default function AdminHome() {
     setNewAnnouncement({ title: "", description: "", priority: "Medium" });
   };
 
-  // Helper for priority badge color
   const priorityColors = {
     High: "bg-red-100 text-red-700",
     Medium: "bg-yellow-100 text-yellow-700",
@@ -86,7 +102,6 @@ export default function AdminHome() {
                 <th className="py-3 px-4">Citizen</th>
                 <th className="py-3 px-4">Issue</th>
                 <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -98,21 +113,20 @@ export default function AdminHome() {
                 >
                   <td className="py-3 px-4 font-medium">{c.citizen}</td>
                   <td className="py-3 px-4">{c.issue}</td>
-                  <td className="py-3 px-4 font-semibold text-green-700">{c.status}</td>
-                  <td
-                    className="py-3 px-4"
-                    onClick={(e) => e.stopPropagation()} // prevent row click
-                  >
-                    <select
-                      value={c.status}
-                      onChange={(e) => updateStatus(c.id, e.target.value)}
-                      className="border border-green-300 rounded-md p-2 w-full max-w-xs text-green-800 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                  <td className="py-3 px-4">
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                        c.status === "Pending"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : c.status === "In Progress"
+                          ? "bg-blue-100 text-blue-700"
+                          : c.status === "Approved"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
                     >
-                      <option>Pending</option>
-                      <option>In Progress</option>
-                      <option>Approved</option>
-                      <option>Done</option>
-                    </select>
+                      {c.status}
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -126,7 +140,6 @@ export default function AdminHome() {
         <h2 className="text-2xl font-semibold mb-6 text-green-800 tracking-wide">
           Announcements
         </h2>
-        {/* Add Announcement Form */}
         <form
           onSubmit={handleAnnouncementSubmit}
           className="space-y-5 mb-8 border-b border-green-300 pb-6"
@@ -169,7 +182,6 @@ export default function AdminHome() {
           </button>
         </form>
 
-        {/* List of Announcements */}
         <div className="space-y-6">
           {announcements.map((a) => (
             <div
