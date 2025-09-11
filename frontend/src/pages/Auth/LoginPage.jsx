@@ -60,8 +60,8 @@ export default function LoginPage() {
 
           const { access, refresh } = res.data;
 
-          // ✅ Store in centralized place
-          setTokens(access, refresh);
+          // Pass full name explicitly
+          setTokens(access, refresh, formData.full_name);
 
           alert("Login successful!");
           console.log("Access Token:", getAccessToken());

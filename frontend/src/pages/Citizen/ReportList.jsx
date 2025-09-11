@@ -1,7 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+<<<<<<< HEAD
+import jsPDF from "jspdf";
+import { api,getAccessToken } from "../Auth/auth";
+=======
 import {Camera,FolderUp} from "lucide-react";
+>>>>>>> 06a4f0575b5fd225e665a4d3bf461e808470f98f
 
 const CATEGORIES = [
   "land and revenue",
@@ -16,9 +21,17 @@ export default function ReportForm() {
   const [description, setDescription] = useState("");
   const [coords, setCoords] = useState(null);
   const [geoStatus, setGeoStatus] = useState("idle");
+<<<<<<< HEAD
+  const [municipalOffice, setMunicipalOffice] = useState("Fetching municipal office...");
+  const [userLocation, setUserLocation] = useState({ city: "", district: "", state: "" });
+
+
+
+=======
   const [showCamera, setShowCamera] = useState(false);
   const [address, setAddress] = useState("");
     
+>>>>>>> 06a4f0575b5fd225e665a4d3bf461e808470f98f
   const mapRef = useRef(null); 
   const leafletMapRef = useRef(null); 
   const markerRef = useRef(null);
@@ -82,15 +95,38 @@ export default function ReportForm() {
 
     // create or move marker
     if (!markerRef.current) {
-      markerRef.current = L.marker([coords.lat, coords.lng]).addTo(map);
-      markerRef.current.bindPopup("<b>Report location</b><br/>Automatically captured.");
-      markerRef.current.openPopup();
+      // Create draggable marker
+      markerRef.current = L.marker([coords.lat, coords.lng], { draggable: true }).addTo(map);
+
+      // Bind popup
+      markerRef.current.bindPopup("<b>Report location</b><br/>Drag to correct location.").openPopup();
+
+      // Update coords when marker is dragged
+      markerRef.current.on("dragend", (e) => {
+        const latLng = e.target.getLatLng();
+        setCoords({ lat: latLng.lat, lng: latLng.lng });
+        map.setView(latLng); // keep marker centered
+      });
     } else {
+      // Move existing marker
       markerRef.current.setLatLng([coords.lat, coords.lng]);
-      // update popup content if required
-      markerRef.current.getPopup()?.setContent("<b>Report location</b><br/>Automatically captured.");
+      markerRef.current.getPopup()?.setContent("<b>Report location</b><br/>Drag to correct location.");
       markerRef.current.openPopup();
     }
+
+    // ✅ Reverse geocoding to get district/city
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lng}&format=json`)
+      .then((res) => res.json())
+      .then((data) => {
+        const city = data.address.city || data.address.town || data.address.village || "";
+        const district = data.address.county || data.address.state_district || "";
+        const state = data.address.state || "";
+        setUserLocation({ city, district, state });
+      })
+      .catch((err) => {
+        console.error("Error fetching city/district/state:", err);
+        setUserLocation({ city: "", district: "", state: "" });
+      });
   }, [coords]);
 
   useEffect(() => {
@@ -119,9 +155,34 @@ export default function ReportForm() {
       setImagePreview(null);
       return;
     }
+
+    // Preview for UI
     setImagePreview(URL.createObjectURL(f));
+
+    // Convert to base64 for PDF
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      localStorage.setItem("uploadedImage", reader.result); // store temporarily
+    };
+    reader.readAsDataURL(f);
   }
 
+ HEAD
+  async function getNearbyMunicipalOffice(coords) {
+    // Using OpenStreetMap Nominatim API (free)
+    const url = `https://nominatim.openstreetmap.org/search.php?q=municipal+office&format=json&limit=1&lat=${coords.lat}&lon=${coords.lng}`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        return data[0].display_name;
+      }
+      return "Municipal office not found nearby";
+    } catch (err) {
+      console.error("Error fetching municipal office:", err);
+      return "Municipal office not found";
+    }
 useEffect(() => {
   // If modal is open and a stream already exists, attach it to the video element
   if (showCamera && streamRef.current && videoRef.current) {
@@ -210,6 +271,63 @@ function takePhoto() {
     e.preventDefault();
     alert("Report submitted (demo only).");
   }
+
+
+  function onSubmit(e) {
+  e.preventDefault();
+
+  if (!category || !description || !coords) {
+    alert("Please fill all required fields before submitting.");
+    return;
+  }
+
+  const doc = new jsPDF();
+  const today = new Date().toLocaleDateString();
+  const userFullName = localStorage.getItem("user_full_name");
+
+  const letter = `
+To,
+Municipal Office,
+${userLocation.district},
+${userLocation.state}
+
+Subject: Complaint Regarding ${category}
+
+Respected Sir/Madam,
+
+I am writing to formally lodge a complaint regarding the following issue:
+
+${description}
+
+The issue has been observed at the following location:
+Latitude: ${coords.lat.toFixed(6)}, Longitude: ${coords.lng.toFixed(6)}
+
+I kindly request your immediate attention and necessary action in resolving this matter
+at the earliest possible time. I would be grateful for your prompt intervention.
+
+Thank you.
+
+Yours sincerely,
+${userFullName || "Citizen"}
+Date: ${today}
+
+You can find the necessary image corresponding to the issue below :-
+`;
+
+  doc.setFont("Times", "Roman");
+  doc.setFontSize(12);
+  doc.text(letter, 20, 30, { maxWidth: 170 });
+
+  const imgData = localStorage.getItem("uploadedImage");
+  if (imgData) {
+    doc.addPage();
+    doc.addImage(imgData, "JPEG", 20, 40, 160, 120);
+  }
+
+  doc.save("complaint_letter.pdf");
+}
+
+
 
   const colors = {
     darkGreen: "#0B2F20", // 🔑 Dark green background
