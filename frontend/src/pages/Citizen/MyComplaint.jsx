@@ -10,48 +10,47 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-export default function MyComplaints() {
+export default function MyComplaint() {
   const [complaints, setComplaints] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-useEffect(() => {
-  const token = getAccessToken();
-  if (!token) {
-    navigate("/login");
-    return;
-  }
+  useEffect(() => {
+    const token = getAccessToken();
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
-  try {
-    const decoded = jwtDecode(token);
-    setUser(decoded);
+    try {
+      const decoded = jwtDecode(token);
+      setUser(decoded);
 
-    fetch("http://127.0.0.1:8000/api/reports/", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch reports");
-        return res.json();
+      fetch("http://127.0.0.1:8000/api/reports/", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
-      .then((data) => {
-        // ✅ backend already filters for citizen user
-        setComplaints(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        console.error("Error fetching complaints:", err);
-        setError("Failed to load complaints. Please try again later.");
-      })
-      .finally(() => setLoading(false));
-  } catch (err) {
-    console.error("Invalid token:", err);
-    navigate("/login");
-  }
-}, [navigate]);
-
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch reports");
+          return res.json();
+        })
+        .then((data) => {
+          // ✅ backend already filters for citizen user
+          setComplaints(Array.isArray(data) ? data : []);
+        })
+        .catch((err) => {
+          console.error("Error fetching complaints:", err);
+          setError("Failed to load complaints. Please try again later.");
+        })
+        .finally(() => setLoading(false));
+    } catch (err) {
+      console.error("Invalid token:", err);
+      navigate("/login");
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#C6C6D0] via-[#104C64] to-[#C0754D] p-6">
@@ -128,23 +127,32 @@ useEffect(() => {
                         <td className="px-6 py-4 text-center">
                           <span
                             className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                              report.status === "Resolved"
+                              report.status === "resolved"
                                 ? "bg-green-100 text-green-700"
-                                : report.status === "In Progress"
+                                : report.status === "in_progress"
                                 ? "bg-yellow-100 text-yellow-700"
-                                : "bg-red-100 text-red-700"
+                                : report.status === "rejected"
+                                ? "bg-gray-200 text-gray-700"
+                                : "bg-red-100 text-red-700" // pending
                             }`}
                           >
-                            {report.status === "Resolved" && (
+                            {report.status === "resolved" && (
                               <CheckCircle className="w-3 h-3 mr-1" />
                             )}
-                            {report.status === "In Progress" && (
+                            {report.status === "in_progress" && (
                               <Clock className="w-3 h-3 mr-1" />
                             )}
-                            {report.status === "Pending" && (
+                            {report.status === "pending" && (
                               <AlertTriangle className="w-3 h-3 mr-1" />
                             )}
-                            {report.status || "Pending"}
+                            {/* Human-readable text */}
+                            {report.status === "in_progress"
+                              ? "In Progress"
+                              : report.status === "resolved"
+                              ? "Resolved"
+                              : report.status === "rejected"
+                              ? "Rejected"
+                              : "Pending"}
                           </span>
                         </td>
                       </tr>

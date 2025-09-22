@@ -1,9 +1,9 @@
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, status, viewsets, permissions
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import User, Report
-from .serializers import UserSerializer, ReportSerializer
+from .models import User, Report, Announcement
+from .serializers import UserSerializer, ReportSerializer, AnnouncementSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .tokens import CustomTokenObtainPairSerializer
 
@@ -43,8 +43,18 @@ class AadhaarVerificationView(APIView):
 class ReportViewSet(viewsets.ModelViewSet):
     queryset = Report.objects.all().order_by("-created_at")
     serializer_class = ReportSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny]  
 
     def perform_create(self, serializer):
-        user = self.request.user if self.request.user.is_authenticated else None
-        serializer.save(user=user)
+        serializer.save(status="pending")
+
+    def perform_update(self, serializer):
+        if "status" in serializer.validated_data:
+            if not self.request.user.is_authenticated or getattr(self.request.user, "role", None) != "district_leader":
+                return Response({"error": "You are not allowed to update the status"}, status=status.HTTP_403_FORBIDDEN)
+        serializer.save()
+
+class AnnouncementListCreateView(generics.ListCreateAPIView):
+    queryset = Announcement.objects.all().order_by('-date')
+    serializer_class = AnnouncementSerializer
+    permission_classes = [permissions.AllowAny] 

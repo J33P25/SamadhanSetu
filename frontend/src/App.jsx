@@ -5,7 +5,8 @@ import Home from "./pages/Home/Home";
 import LoginPage from "./pages/Auth/LoginPage";
 import CitizenHome from "./pages/Citizen/CitizenHome";
 import AdminHome from "./pages/Admin/AdminHome";
-import ViewComplaint from "./pages/Admin/ViewComplaint";
+import Admincomplaint from "./pages/Admin/ViewComplaint";
+import Citizencomplaint from "./pages/Citizen/MyComplaint"
 import PrivateRoute from "./pages/Auth/Privateroute";
 import ReportList from "./pages/Citizen/ReportList";
 import Feedback from "./pages/Citizen/Feedback";
@@ -24,6 +25,35 @@ function App() {
           element={
             <PrivateRoute>
               <CitizenHome />
+            </PrivateRoute>
+          }
+        />
+
+                <Route
+          path="/citizencomplaint"
+          element={
+            <PrivateRoute>
+              <Citizencomplaint />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Reports */}
+        <Route
+          path="/report"
+          element={
+            <PrivateRoute>
+              <ReportList />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Feedback */}
+        <Route
+          path="/feedback"
+          element={
+            <PrivateRoute>
+              <Feedback />
             </PrivateRoute>
           }
         />
@@ -48,30 +78,10 @@ function App() {
 
         {/* Complaints */}
         <Route
-          path="/complaints"
+          path="/admincomplaints/:id"
           element={
             <PrivateRoute>
-              <ViewComplaint />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Reports */}
-        <Route
-          path="/report"
-          element={
-            <PrivateRoute>
-              <ReportList />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Feedback */}
-        <Route
-          path="/feedback"
-          element={
-            <PrivateRoute>
-              <Feedback />
+              <Admincomplaint />
             </PrivateRoute>
           }
         />

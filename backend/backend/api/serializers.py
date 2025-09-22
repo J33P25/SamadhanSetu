@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
-from .models import User, Report
+from .models import User, Report, Announcement
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -36,10 +36,14 @@ class AadhaarVerificationSerializer(serializers.Serializer):
             return user
         except User.DoesNotExist:
             raise serializers.ValidationError("User with this Aadhaar does not exist.")
-
+        
+class AnnouncementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Announcement
+        fields = "__all__"
 
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = "__all__"
-        read_only_fields = ["id", "created_at", "user"]
+        read_only_fields = ["id", "created_at"]

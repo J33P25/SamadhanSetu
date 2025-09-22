@@ -11,6 +11,13 @@ const CATEGORIES = [
   { value: "other", label: "Other" },
 ];
 
+const STATUS_OPTIONS = [
+  { value: "pending", label: "Pending" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "resolved", label: "Resolved" },
+  { value: "rejected", label: "Rejected" },
+];
+
 export default function ReportForm() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -25,6 +32,7 @@ export default function ReportForm() {
     district: "",
     state: "",
   });
+  const [status, setStatus] = useState("pending");
 
   const navigate = useNavigate();
 
@@ -102,7 +110,8 @@ export default function ReportForm() {
       .then((data) => {
         const city =
           data.address.city || data.address.town || data.address.village || "";
-        const district = data.address.county || data.address.state_district || "";
+        const district =
+          data.address.county || data.address.state_district || "";
         const state = data.address.state || "";
         setUserLocation({ city, district, state });
       })
@@ -200,6 +209,10 @@ export default function ReportForm() {
     formData.append("latitude", coords.lat);
     formData.append("longitude", coords.lng);
     formData.append("address", address);
+
+    // Always send status
+    formData.append("status", status);
+
     if (imageFile) formData.append("image", imageFile);
 
     try {
@@ -217,6 +230,7 @@ export default function ReportForm() {
         alert("Report submitted successfully!");
         setCategory("");
         setDescription("");
+        setStatus("pending");
         setImageFile(null);
         setImagePreview(null);
         navigate("/citizenhome");
@@ -353,6 +367,24 @@ export default function ReportForm() {
           </div>
           <div ref={mapRef} className="rf-map" />
         </div>
+
+        {/* status (only for district leaders) */}
+        {localStorage.getItem("role") === "district_leader" && (
+          <div>
+            <label className="rf-label">Report Status</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="rf-select"
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className="rf-btns">
           <button

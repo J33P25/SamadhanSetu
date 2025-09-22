@@ -3,51 +3,53 @@ import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-
-/**
- * ViewComplaint page (full-page route)
- * - route: /officer/complaints/:id
- * - prefers complaint object from location.state (OfficerHome should pass it)
- * - falls back to localStorage key `complaint-{id}` (useful when opening the URL directly)
- * - left half: formal letter (read-only)
- * - top-right: small Leaflet map showing system/browser location (demo)
- * - bottom-right: two action buttons to change status (persisted to localStorage)
- *
- * Colors tuned to match Officer Dashboard:
- *  - primary dark green: text-green-800 / bg-green-50 / border-green-200
- *  - mint accent: bg-green-100 etc.
- */
+import { getAccessToken } from "../Auth/auth.js";
 
 export default function ViewComplaint() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { id } = useParams(); // route param
+  const { id } = useParams();
+  const token = getAccessToken();
 
-  // Prefer complaint passed via location.state (may be either { complaint } or plain object)
-  const initialFromState = location.state && (location.state.complaint || location.state);
-  const storedKey = id
-    ? `complaint-${id}`
-    : initialFromState
-    ? `complaint-${initialFromState.id}`
-    : null;
+  const [complaint, setComplaint] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const storedJson = storedKey ? localStorage.getItem(storedKey) : null;
-
-  const [complaint, setComplaint] = useState(() => {
-    if (initialFromState) return initialFromState;
-    if (storedJson) return JSON.parse(storedJson);
-    return null;
-  });
-
-  // Map refs for Leaflet
   const mapRef = useRef(null);
   const leafletMapRef = useRef(null);
   const markerRef = useRef(null);
-
-  // system/browser coords for demo map (fallback center of India)
   const [sysCoords, setSysCoords] = useState(null);
 
-  // Acquire browser location (demo). If denied, fallback to India center.
+  // 1️⃣ Fetch complaint from API if not in state/localStorage
+  useEffect(() => {
+    const initialFromState = location.state && (location.state.complaint || location.state);
+    if (initialFromState) {
+      setComplaint(initialFromState);
+      setLoading(false);
+      return;
+    }
+
+    if (!id || !token) {
+      navigate(-1);
+      return;
+    }
+
+    fetch(`http://127.0.0.1:8000/api/reports/${id}/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        // API may return array or object
+        const c = Array.isArray(data) ? data[0] : data;
+        if (!c) throw new Error("Complaint not found");
+        setComplaint(c);
+        // persist locally if needed
+        localStorage.setItem(`complaint-${c.id}`, JSON.stringify(c));
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+  }, [id, token, location.state, navigate]);
+
+  // 2️⃣ Browser geolocation
   useEffect(() => {
     if (!("geolocation" in navigator)) {
       setSysCoords({ lat: 20.5937, lng: 78.9629 });
@@ -60,7 +62,7 @@ export default function ViewComplaint() {
     );
   }, []);
 
-  // Init / update Leaflet map when sysCoords ready
+  // 3️⃣ Leaflet map
   useEffect(() => {
     if (!mapRef.current || !sysCoords) return;
 
@@ -88,27 +90,15 @@ export default function ViewComplaint() {
       markerRef.current.setLatLng([sysCoords.lat, sysCoords.lng]);
     }
 
-    // ensure correct tile rendering after layout
     setTimeout(() => {
       try {
         leafletMapRef.current.invalidateSize();
-      } catch (e) {
-        /* ignore */
-      }
+      } catch (e) {}
     }, 120);
   }, [sysCoords]);
 
-  // If not present, try to read complaint from localStorage on mount
-  useEffect(() => {
-    if (!complaint && storedKey) {
-      const s = localStorage.getItem(storedKey);
-      if (s) setComplaint(JSON.parse(s));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // If still no complaint, show fallback message
-  if (!complaint) {
+  if (loading) return <p className="p-6 text-gray-700">Loading complaint...</p>;
+  if (!complaint)
     return (
       <div className="p-6">
         <p className="text-red-600 font-medium">No complaint data found.</p>
@@ -120,45 +110,73 @@ export default function ViewComplaint() {
         </button>
       </div>
     );
-  }
 
-  // Generate formal letter text if complaint does not include one
-  const letterText =
-    complaint.letter ||
-    `To
+  // Tweaked formal letter
+  const letterText = complaint.letter || `To
 The District Collector
 [District Name] District
 [State], India
 
-Subject: Report on ${complaint.issue}
+Subject: Report regarding issue ID #${complaint.id}
 
 Respected Sir/Madam,
 
-This is to formally submit that I, ${complaint.citizen}, have filed a report concerning ${complaint.issue}. The matter has been recorded and respectfully brought to the attention of the District Administration for necessary review and appropriate action.
+This is to formally submit that a complaint has been filed regarding the following matter:
 
-I request the District Government to kindly acknowledge this submission and initiate suitable measures in accordance with prescribed procedures.
+Issue: ${complaint.issue}
+Description: ${complaint.description}
+
+${complaint.image ? "Attached Image: Please refer to the evidence image provided with this complaint for visual reference." : ""}
+
+The matter has been recorded and is respectfully brought to the attention of the District Administration for necessary review and appropriate action.
 
 Thanking you,
 
 Yours faithfully,
-${complaint.citizen}`;
+Concerned Citizen`;
 
-  // Persist status locally (replace this with API call if you have backend)
-  const updateStatus = (newStatus) => {
-    const updated = { ...complaint, status: newStatus };
-    setComplaint(updated);
-    const key = storedKey || `complaint-${updated.id}`;
-    localStorage.setItem(key, JSON.stringify(updated));
+  const updateStatus = async (newStatus) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/reports/${complaint.id}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update status");
+
+      const updated = await res.json();
+      setComplaint(updated);
+      localStorage.setItem(`complaint-${updated.id}`, JSON.stringify(updated));
+    } catch (err) {
+      console.error("Error updating status:", err);
+    }
   };
 
-  // Status badge classes
   const statusBadgeClass = (status) => {
-    if (status === "Pending") return "bg-yellow-100 text-yellow-700";
-    if (status === "In Progress") return "bg-blue-100 text-blue-700";
-    if (status === "Approved") return "bg-green-100 text-green-700";
-    if (status === "Completed") return "bg-gray-100 text-gray-700";
-    return "bg-gray-100 text-gray-700";
+    switch (status) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "in_progress":
+        return "bg-blue-100 text-blue-700";
+      case "approved":
+        return "bg-green-100 text-green-700";
+      case "completed":
+        return "bg-gray-300 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
   };
+
+
+  // Ensure image URL is absolute
+  const imageUrl =
+    complaint.image && !complaint.image.startsWith("http")
+      ? `http://127.0.0.1:8000${complaint.image}`
+      : complaint.image;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -173,13 +191,13 @@ ${complaint.citizen}`;
             >
               ← Back
             </button>
-
             <div>
               <div className="text-lg font-semibold text-green-800">Complaint #{complaint.id}</div>
-              <div className="text-sm text-green-700">{complaint.citizen} — {complaint.issue}</div>
+              <div className="text-sm text-green-700">
+                {complaint.address || `${complaint.latitude}, ${complaint.longitude}`} — {complaint.issue}
+              </div>
             </div>
           </div>
-
           <div>
             <span className={`px-3 py-1 rounded text-sm font-semibold ${statusBadgeClass(complaint.status)}`}>
               {complaint.status}
@@ -187,50 +205,43 @@ ${complaint.citizen}`;
           </div>
         </div>
 
-        {/* main content: left letter, right map + actions */}
+        {/* main content */}
         <div className="flex">
-          {/* left half: formal letter */}
           <div className="w-1/2 p-6 border-r border-green-200">
             <h2 className="text-xl font-semibold mb-3 text-green-700">Formal Letter</h2>
-
             <textarea
               readOnly
               value={letterText}
               className="w-full h-[72vh] p-4 border rounded-md bg-gray-50 text-sm text-gray-800 resize-none"
             />
+            {imageUrl && (
+              <div className="mt-4">
+                <h3 className="text-green-700 font-semibold mb-2">Attached Image</h3>
+                <img src={imageUrl} alt="Complaint Evidence" className="w-full max-h-80 object-contain rounded border border-green-200" />
+              </div>
+            )}
           </div>
 
-          {/* right half: top-right map (quarter) + bottom-right actions */}
           <div className="w-1/2 p-6 flex flex-col">
             <div className="mb-4">
               <h3 className="text-sm text-green-700 mb-2 font-semibold">Reported Location (system)</h3>
-              <div
-                ref={mapRef}
-                className="w-full h-56 rounded-md border border-green-200 overflow-hidden"
-                aria-label="map showing report location"
-              />
+              <div ref={mapRef} className="w-full h-56 rounded-md border border-green-200 overflow-hidden" />
             </div>
 
-            {/* action buttons area (bottom-right quarter) */}
             <div className="mt-auto">
               <div className="flex gap-4">
                 <button
-                  onClick={() => updateStatus("Approved")}
+                  onClick={() => updateStatus("approved")}
                   className="flex-1 px-6 py-3 bg-green-700 text-white rounded hover:bg-green-800 font-semibold"
                 >
                   APPROVE
                 </button>
-
                 <button
-                  onClick={() => updateStatus("Completed")}
+                  onClick={() => updateStatus("completed")}
                   className="flex-1 px-6 py-3 bg-gray-700 text-white rounded hover:bg-gray-800 font-semibold"
                 >
                   MARK COMPLETED
                 </button>
-              </div>
-
-              <div className="mt-3 text-sm text-gray-500">
-                Status updated locally. If you have a backend API, replace the localStorage persistence in <code>updateStatus</code> with an API request.
               </div>
             </div>
           </div>

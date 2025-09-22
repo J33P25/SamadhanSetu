@@ -1,8 +1,16 @@
 from django.contrib import admin
 from django.urls import path, include
-from api.views import CreateUserView, AadhaarVerificationView, CustomTokenObtainPairView, ReportViewSet
+from api.views import (
+    CreateUserView,
+    AadhaarVerificationView,
+    CustomTokenObtainPairView,
+    ReportViewSet,
+    AnnouncementListCreateView,
+)
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework import routers
+from django.conf import settings
+from django.conf.urls.static import static
 
 router = routers.DefaultRouter()
 router.register("reports", ReportViewSet, basename="report")
@@ -23,6 +31,12 @@ urlpatterns = [
     # Browsable API login/logout
     path("api-auth/", include("rest_framework.urls")),
 
-    # Report endpoints
+    # Reports
     path("api/", include(router.urls)),
+
+    # Announcements
+    path("api/announcements/", AnnouncementListCreateView.as_view(), name="announcements"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

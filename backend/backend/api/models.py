@@ -43,6 +43,19 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.full_name
+    
+class Announcement(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    priority = models.CharField(
+        max_length=10,
+        choices=[("High", "High"), ("Medium", "Medium"), ("Low", "Low")],
+        default="Medium"
+    )
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
 
 
 class Report(models.Model):
@@ -53,13 +66,25 @@ class Report(models.Model):
         ("other", "Other"),
     ]
 
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("in_progress", "In Progress"),
+        ("resolved", "Resolved"),
+        ("rejected", "Rejected"),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     description = models.TextField()
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
     address = models.CharField(max_length=255, blank=True)
-    image = models.ImageField(upload_to="reports/", null=True, blank=True)  # store uploaded/captured image
+    image = models.ImageField(upload_to="reports/", null=True, blank=True)  
+    status = models.CharField(       
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

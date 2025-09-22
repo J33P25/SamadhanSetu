@@ -1,19 +1,15 @@
 import { useEffect, useState } from "react";
-import { api, getAccessToken } from "../Auth/auth.js";
+import { getAccessToken } from "../Auth/auth.js";
 import {
   Volume2,
   FileText,
   PlusCircle,
   ClipboardList,
-  Bell,
-  Calendar,
-  TrendingUp,
   Users,
   AlertTriangle,
   CheckCircle,
   Clock,
-  Search,
-  Filter,
+  Calendar,
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
@@ -25,14 +21,25 @@ export default function CitizenHome() {
 
   const navigate = useNavigate();
 
-  // ✅ Load user from JWT
+  // ✅ Load user, complaints, and announcements
   useEffect(() => {
     const token = getAccessToken();
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        console.log("🔑 Decoded JWT:", decoded); // debug
         setUser(decoded);
+
+        // Complaints
+        fetch("http://127.0.0.1:8000/api/reports/", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((res) => res.json())
+          .then((data) => setComplaints(Array.isArray(data) ? data : []));
+
+        // Announcements
+        fetch("http://127.0.0.1:8000/api/announcements/")
+          .then((res) => res.json())
+          .then((data) => setAnnouncements(Array.isArray(data) ? data : []));
       } catch (err) {
         console.error("Invalid token:", err);
         navigate("/login");
@@ -47,27 +54,26 @@ export default function CitizenHome() {
       label: "Total Complaints",
       value: complaints.length,
       icon: ClipboardList,
-
       color: "blue",
     },
     {
       label: "Resolved Issues",
-      value: complaints.filter((c) => c.status === "Resolved").length,
+      value: complaints.filter((c) => c.status === "resolved").length,
       icon: CheckCircle,
-      trend: "+8 this month",
       color: "green",
     },
     {
       label: "Pending Issues",
-      value: complaints.filter((c) => c.status !== "Resolved").length,
+      value: complaints.filter(
+        (c) => c.status === "pending" || c.status === "in_progress"
+      ).length,
       icon: Clock,
-      trend: "-2 from last week",
       color: "orange",
     },
   ];
 
   const getPriorityColor = (priority) => {
-    switch (priority) {
+    switch (priority?.toLowerCase()) {
       case "high":
         return "border-l-[#C0754D] bg-[#C0754D]/10";
       case "medium":
@@ -81,19 +87,15 @@ export default function CitizenHome() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#C6C6D0] via-[#104C64] to-[#C0754D]">
-      {/* Header Section */}
+      {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#104C64] to-[#C0754D] rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                Welcome Back, {user?.full_name || user?.username || "Citizen"}
-              </h1>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#104C64] to-[#C0754D] rounded-lg flex items-center justify-center">
+              <Users className="w-6 h-6 text-white" />
             </div>
-          </div>
+            Welcome Back, {user?.full_name || "Citizen"}
+          </h1>
         </div>
       </div>
 
@@ -114,7 +116,6 @@ export default function CitizenHome() {
                   <p className="text-3xl font-bold text-gray-900 mt-2">
                     {stat.value}
                   </p>
-
                 </div>
                 <div
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
@@ -145,46 +146,41 @@ export default function CitizenHome() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="bg-gradient-to-r from-[#104C64] to-[#C0754D] p-6 text-white">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold flex items-center gap-3">
-                    <Volume2 className="w-6 h-6" />
-                    Latest Announcements
-                  </h2>
-                </div>
+                <h2 className="text-xl font-bold flex items-center gap-3">
+                  <Volume2 className="w-6 h-6" />
+                  Latest Announcements
+                </h2>
               </div>
               <div className="p-6 space-y-4">
-                {announcements.map((announcement, idx) => (
+                {announcements.map((a, idx) => (
                   <div
                     key={idx}
-                    className={`p-4 border-l-4 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer ${getPriorityColor(
-                      announcement.priority
+                    className={`p-4 border-l-4 rounded-lg hover:shadow-md transition-all duration-200 ${getPriorityColor(
+                      a.priority
                     )}`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900 mb-2">
-                          {announcement.title}
+                          {a.title}
                         </h3>
                         <div className="flex items-center gap-4 text-sm text-gray-600">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
-                            {new Date(announcement.date).toLocaleDateString()}
-                          </span>
-                          <span className="px-2 py-1 bg-[#C6C6D0] rounded-full text-xs font-medium">
-                            {announcement.category}
+                            {new Date(a.date).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
                       <div
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          announcement.priority === "high"
+                          a.priority?.toLowerCase() === "high"
                             ? "bg-[#C0754D]/20 text-[#C0754D]"
-                            : announcement.priority === "medium"
+                            : a.priority?.toLowerCase() === "medium"
                             ? "bg-[#104C64]/20 text-[#104C64]"
                             : "bg-[#C6C6D0] text-gray-800"
                         }`}
                       >
-                        {announcement.priority?.toUpperCase()}
+                        {a.priority?.toUpperCase()}
                       </div>
                     </div>
                   </div>
@@ -200,62 +196,52 @@ export default function CitizenHome() {
                 Quick Actions
               </h3>
               <div className="space-y-3">
-                <button 
-                onClick={() => navigate("/report")}
-                className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-gradient-to-r from-[#104C64] to-[#C0754D] text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <button
+                  onClick={() => navigate("/report")}
+                  className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-gradient-to-r from-[#104C64] to-[#C0754D] text-white shadow-lg"
+                >
                   <PlusCircle className="w-5 h-5" />
                   <span className="font-medium">Report New Issue</span>
                 </button>
-                <button className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-gradient-to-r from-[#104C64] to-[#C0754D] text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <button
+                  onClick={() => navigate("/citizencomplaint")}
+                  className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-gradient-to-r from-[#104C64] to-[#C0754D] text-white shadow-lg"
+                >
                   <ClipboardList className="w-5 h-5" />
                   <span className="font-medium">My Complaints</span>
                 </button>
-                <button 
-                onClick={() => navigate("/feedback")}
-                className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-gradient-to-r from-[#104C64] to-[#C0754D] text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <button
+                  onClick={() => navigate("/feedback")}
+                  className="w-full flex items-center gap-3 px-4 py-4 rounded-xl bg-gradient-to-r from-[#104C64] to-[#C0754D] text-white shadow-lg"
+                >
                   <FileText className="w-5 h-5" />
                   <span className="font-medium">Submit Feedback</span>
                 </button>
               </div>
             </div>
 
-            {/* Status Summary */}
+            {/* Issue Status */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
               <h3 className="text-lg font-bold text-gray-900 mb-4">
                 Issue Status
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-[#104C64]/10 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-[#104C64]" />
-                    <span className="text-sm font-medium text-[#104C64]">
-                      Resolved
-                    </span>
-                  </div>
+                  <CheckCircle className="w-5 h-5 text-[#104C64]" />
                   <span className="text-lg font-bold text-[#104C64]">
-                    {complaints.filter((c) => c.status === "Resolved").length}
+                    {complaints.filter((c) => c.status === "resolved").length}
                   </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-[#C6C6D0]/40 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-gray-700" />
-                    <span className="text-sm font-medium text-gray-700">
-                      In Progress
-                    </span>
-                  </div>
+                  <Clock className="w-5 h-5 text-gray-700" />
                   <span className="text-lg font-bold text-gray-700">
-                    {complaints.filter((c) => c.status === "In Progress").length}
+                    {complaints.filter((c) => c.status === "in_progress").length}
                   </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-[#C0754D]/10 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-[#C0754D]" />
-                    <span className="text-sm font-medium text-[#C0754D]">
-                      Pending
-                    </span>
-                  </div>
+                  <AlertTriangle className="w-5 h-5 text-[#C0754D]" />
                   <span className="text-lg font-bold text-[#C0754D]">
-                    {complaints.filter((c) => c.status === "Pending").length}
+                    {complaints.filter((c) => c.status === "pending").length}
                   </span>
                 </div>
               </div>
@@ -263,57 +249,7 @@ export default function CitizenHome() {
           </div>
         </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <tbody className="divide-y divide-gray-200">
-                {complaints.map((complaint, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-medium text-gray-900">
-                        {complaint.issue}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        ID: #{complaint.id?.toString().padStart(4, "0")}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                          complaint.status === "Resolved"
-                            ? "bg-[#104C64]/20 text-[#104C64]"
-                            : complaint.status === "In Progress"
-                            ? "bg-[#C6C6D0]/40 text-gray-700"
-                            : "bg-[#C0754D]/20 text-[#C0754D]"
-                        }`}
-                      >
-                        {complaint.status === "Resolved" && (
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                        )}
-                        {complaint.status === "In Progress" && (
-                          <Clock className="w-3 h-3 mr-1" />
-                        )}
-                        {complaint.status === "Pending" && (
-                          <AlertTriangle className="w-3 h-3 mr-1" />
-                        )}
-                        {complaint.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center text-sm text-gray-600">
-                      {complaint.date
-                        ? new Date(complaint.date).toLocaleDateString()
-                        : "-"}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button className="text-[#104C64] hover:text-[#C0754D] text-sm font-medium">
-                        View Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
+    </div>
   );
 }
