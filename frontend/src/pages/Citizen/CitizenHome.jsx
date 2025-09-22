@@ -10,6 +10,7 @@ import {
   CheckCircle,
   Clock,
   Calendar,
+  LogOut,
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
@@ -48,6 +49,19 @@ export default function CitizenHome() {
       navigate("/login");
     }
   }, [navigate]);
+
+  // ✅ Logout function
+  const handleLogout = () => {
+    // Remove token from localStorage (adjust based on your auth implementation)
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    
+    // Clear user state
+    setUser(null);
+    
+    // Navigate to login page
+    navigate("/login");
+  };
 
   const stats = [
     {
@@ -90,12 +104,23 @@ export default function CitizenHome() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#104C64] to-[#C0754D] rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            Welcome Back, {user?.full_name || "Citizen"}
-          </h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#104C64] to-[#C0754D] rounded-lg flex items-center justify-center">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              Welcome Back, {user?.full_name || "Citizen"}
+            </h1>
+            
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 font-medium shadow-sm hover:shadow-md"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
