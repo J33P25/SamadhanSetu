@@ -6,7 +6,7 @@ export default function AdminHome() {
   const navigate = useNavigate();
   const token = getAccessToken();
 
-  const [activeTab, setActiveTab] = useState("complaints");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [complaints, setComplaints] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [feedbacks] = useState([
@@ -23,6 +23,7 @@ export default function AdminHome() {
   useEffect(() => {
     if (!token) return navigate("/login");
 
+    // Fetch complaints
     fetch("http://127.0.0.1:8000/api/reports/", {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -30,6 +31,7 @@ export default function AdminHome() {
       .then((data) => setComplaints(Array.isArray(data) ? data : []))
       .catch((err) => console.error("Error fetching complaints:", err));
 
+    // Fetch announcements
     fetch("http://127.0.0.1:8000/api/announcements/")
       .then((res) => res.json())
       .then((data) => setAnnouncements(Array.isArray(data) ? data : []))
@@ -65,6 +67,12 @@ export default function AdminHome() {
     navigate("/login");
   };
 
+  // ✅ Complaint stats
+  const totalComplaints = complaints.length;
+  const resolved = complaints.filter((c) => c.status === "approved").length;
+  const pending = complaints.filter((c) => c.status === "pending").length;
+  const inProgress = complaints.filter((c) => c.status === "in_progress").length;
+
   const priorityColors = {
     High: "bg-red-100 text-red-700",
     Medium: "bg-yellow-100 text-yellow-700",
@@ -80,7 +88,7 @@ export default function AdminHome() {
           <h1 className="text-2xl font-bold mb-8 text-center">Officer Panel</h1>
 
           <nav className="flex flex-col gap-3">
-            {["complaints", "announcements", "feedback"].map((tab) => (
+            {["dashboard", "complaints", "announcements", "feedback"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -127,7 +135,32 @@ export default function AdminHome() {
           Officer Dashboard — {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
         </h1>
 
-        {/* Complaints Section */}
+        {/* ✅ Dashboard Summary */}
+        {activeTab === "dashboard" && (
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-xl shadow-md border-t-4 border-green-500">
+              <h2 className="text-gray-500 font-semibold text-sm">Total Complaints</h2>
+              <p className="text-3xl font-bold text-green-800 mt-2">{totalComplaints}</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-md border-t-4 border-yellow-500">
+              <h2 className="text-gray-500 font-semibold text-sm">Pending</h2>
+              <p className="text-3xl font-bold text-yellow-700 mt-2">{pending}</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-md border-t-4 border-blue-500">
+              <h2 className="text-gray-500 font-semibold text-sm">In Progress</h2>
+              <p className="text-3xl font-bold text-blue-700 mt-2">{inProgress}</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-md border-t-4 border-green-600 md:col-span-3">
+              <h2 className="text-gray-500 font-semibold text-sm">Resolved</h2>
+              <p className="text-3xl font-bold text-green-700 mt-2">{resolved}</p>
+            </div>
+          </section>
+        )}
+
+        {/* ✅ Complaints Section */}
         {activeTab === "complaints" && (
           <section className="bg-white p-6 rounded-2xl shadow-md border border-green-200">
             <h2 className="text-xl font-semibold mb-4 text-green-800">Complaints</h2>
@@ -148,7 +181,9 @@ export default function AdminHome() {
                       navigate(`/admincomplaints/${c.id}`, { state: { complaint: c } })
                     }
                   >
-                    <td className="py-3 px-4">{c.address || `${c.latitude}, ${c.longitude}`}</td>
+                    <td className="py-3 px-4">
+                      {c.address || `${c.latitude}, ${c.longitude}`}
+                    </td>
                     <td className="py-3 px-4">{c.description}</td>
                     <td className="py-3 px-4">
                       <span
@@ -172,7 +207,7 @@ export default function AdminHome() {
           </section>
         )}
 
-        {/* Announcements Section */}
+        {/* ✅ Announcements Section */}
         {activeTab === "announcements" && (
           <section className="bg-white p-6 rounded-2xl shadow-md border border-green-200">
             <h2 className="text-xl font-semibold mb-4 text-green-800">Announcements</h2>
@@ -232,7 +267,7 @@ export default function AdminHome() {
           </section>
         )}
 
-        {/* Feedback Section */}
+        {/* ✅ Feedback Section */}
         {activeTab === "feedback" && (
           <section className="bg-white p-6 rounded-2xl shadow-md border border-green-200">
             <h2 className="text-xl font-semibold mb-4 text-green-800">Citizen Feedback</h2>
