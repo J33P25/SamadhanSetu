@@ -6,6 +6,7 @@ export default function AdminHome() {
   const navigate = useNavigate();
   const token = getAccessToken();
 
+  const [activeTab, setActiveTab] = useState("complaints");
   const [complaints, setComplaints] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [feedbacks] = useState([
@@ -18,27 +19,19 @@ export default function AdminHome() {
     priority: "Medium",
   });
 
-  // ✅ Fetch complaints + announcements from API
+  // ✅ Fetch complaints & announcements
   useEffect(() => {
     if (!token) return navigate("/login");
 
-    // Fetch complaints
     fetch("http://127.0.0.1:8000/api/reports/", {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch complaints");
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((data) => setComplaints(Array.isArray(data) ? data : []))
       .catch((err) => console.error("Error fetching complaints:", err));
 
-    // Fetch announcements
     fetch("http://127.0.0.1:8000/api/announcements/")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch announcements");
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((data) => setAnnouncements(Array.isArray(data) ? data : []))
       .catch((err) => console.error("Error fetching announcements:", err));
   }, [token, navigate]);
@@ -58,11 +51,18 @@ export default function AdminHome() {
 
       if (!res.ok) throw new Error("Failed to add announcement");
       const data = await res.json();
-      setAnnouncements([data, ...announcements]); // prepend new one
+      setAnnouncements([data, ...announcements]);
       setNewAnnouncement({ title: "", description: "", priority: "Medium" });
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // ✅ Logout function
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    navigate("/login");
   };
 
   const priorityColors = {
@@ -72,160 +72,179 @@ export default function AdminHome() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-8 sm:p-6">
-      <h1 className="text-4xl font-extrabold mb-6 text-green-900 tracking-wide">
-        Officer Dashboard
-      </h1>
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
+      <aside className="w-64 bg-green-800 text-white flex flex-col justify-between py-8 px-4 shadow-lg">
+        {/* Top Section */}
+        <div>
+          <h1 className="text-2xl font-bold mb-8 text-center">Officer Panel</h1>
 
-      {/* Complaints Section */}
-      <section className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg mb-8 border border-green-200">
-        <h2 className="text-2xl font-semibold mb-6 text-green-800 tracking-wide">
-          Complaints
-        </h2>
-        <div className="overflow-x-auto rounded-lg">
-          <table className="w-full border-collapse text-gray-700 shadow-sm">
-            <thead>
-              <tr className="bg-green-100 text-left text-green-900 font-semibold uppercase tracking-wide">
-                <th className="py-3 px-4">Location</th>
-                <th className="py-3 px-4">Issue</th>
-                <th className="py-3 px-4">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {complaints.map((c) => (
-                <tr
-                  key={c.id}
-                  className="border-b border-gray-200 cursor-pointer hover:bg-green-50 transition-colors duration-200 ease-in-out"
-                  onClick={() => navigate(`/admincomplaints/${c.id}`, { state: { complaint: c } })}
-                >
-                  <td className="py-3 px-4 font-medium">
-                    {c.address || `${c.latitude}, ${c.longitude}`}
-                  </td>
-                  <td className="py-3 px-4">{c.description}</td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                        c.status === "pending"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : c.status === "in_progress"
-                          ? "bg-blue-100 text-blue-700"
-                          : c.status === "approved"
-                          ? "bg-green-100 text-green-700"
-                          : c.status === "completed"
-                          ? "bg-gray-300 text-gray-800"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {c.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <nav className="flex flex-col gap-3">
+            {["complaints", "announcements", "feedback"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`text-left px-4 py-3 rounded-lg font-semibold transition-colors ${
+                  activeTab === tab
+                    ? "bg-green-600 text-white"
+                    : "hover:bg-green-700 hover:text-white text-gray-200"
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+          </nav>
         </div>
-      </section>
 
-
-      {/* Announcements Section */}
-      <section className="bg-white text-black p-6 sm:p-8 rounded-2xl shadow-lg mb-8 border border-green-200">
-        <h2 className="text-2xl font-semibold mb-6 text-green-800 tracking-wide">
-          Announcements
-        </h2>
-        <form
-          onSubmit={handleAnnouncementSubmit}
-          className="mb-8 border-b border-green-300 pb-6"
-        >
-          <div className="mb-3">
-            <input
-              type="text"
-              placeholder="Title"
-              value={newAnnouncement.title}
-              onChange={(e) =>
-                setNewAnnouncement({ ...newAnnouncement, title: e.target.value })
-              }
-              className="w-full p-3 border border-green-300 rounded-lg"
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <textarea
-              placeholder="Description"
-              value={newAnnouncement.description}
-              onChange={(e) =>
-                setNewAnnouncement({ ...newAnnouncement, description: e.target.value })
-              }
-              className="w-full p-3 border border-green-300 rounded-lg h-28 sm:h-24 resize-none"
-              required
-            ></textarea>
-          </div>
-
-          <div className="mb-4">
-            <select
-              value={newAnnouncement.priority}
-              onChange={(e) =>
-                setNewAnnouncement({ ...newAnnouncement, priority: e.target.value })
-              }
-              className="w-full max-w-xs p-3 border border-green-300 rounded-lg"
+        {/* Bottom Section (Logout Button) */}
+        <div className="border-t border-green-700 mt-8 pt-6">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-md transition-all"
+          >
+            <span>Logout</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              <option>High</option>
-              <option>Medium</option>
-              <option>Low</option>
-            </select>
-          </div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1"
+              />
+            </svg>
+          </button>
+        </div>
+      </aside>
 
-          <div>
-            <button
-              type="submit"
-              className="bg-green-700 hover:bg-green-800 transition-colors duration-150 text-white px-6 py-3 rounded-lg font-semibold"
-            >
-              Add Announcement
-            </button>
-          </div>
-        </form>
+      {/* Main Content */}
+      <main className="flex-1 p-8">
+        <h1 className="text-3xl font-bold text-green-900 mb-6">
+          Officer Dashboard — {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+        </h1>
 
+        {/* Complaints Section */}
+        {activeTab === "complaints" && (
+          <section className="bg-white p-6 rounded-2xl shadow-md border border-green-200">
+            <h2 className="text-xl font-semibold mb-4 text-green-800">Complaints</h2>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-green-100 text-green-900 font-semibold uppercase text-left">
+                  <th className="py-3 px-4">Location</th>
+                  <th className="py-3 px-4">Issue</th>
+                  <th className="py-3 px-4">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {complaints.map((c) => (
+                  <tr
+                    key={c.id}
+                    className="border-b hover:bg-green-50 cursor-pointer"
+                    onClick={() =>
+                      navigate(`/admincomplaints/${c.id}`, { state: { complaint: c } })
+                    }
+                  >
+                    <td className="py-3 px-4">{c.address || `${c.latitude}, ${c.longitude}`}</td>
+                    <td className="py-3 px-4">{c.description}</td>
+                    <td className="py-3 px-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                          c.status === "pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : c.status === "in_progress"
+                            ? "bg-blue-100 text-blue-700"
+                            : c.status === "approved"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {c.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
 
-        <div className="space-y-6">
-          {announcements.map((a) => (
-            <div
-              key={a.id}
-              className="border border-green-200 p-6 rounded-xl bg-green-50 shadow-sm hover:shadow-md transition-shadow duration-150"
-            >
-              <h3 className="font-extrabold text-xl text-green-900 mb-1">{a.title}</h3>
-              <p className="text-green-800 mb-3">{a.description}</p>
-              <div className="flex items-center justify-between text-sm text-green-700 font-medium">
-                <span>{new Date(a.date).toLocaleString()}</span>
+        {/* Announcements Section */}
+        {activeTab === "announcements" && (
+          <section className="bg-white p-6 rounded-2xl shadow-md border border-green-200">
+            <h2 className="text-xl font-semibold mb-4 text-green-800">Announcements</h2>
+
+            <form onSubmit={handleAnnouncementSubmit} className="mb-8 border-b pb-6">
+              <input
+                type="text"
+                placeholder="Title"
+                value={newAnnouncement.title}
+                onChange={(e) =>
+                  setNewAnnouncement({ ...newAnnouncement, title: e.target.value })
+                }
+                className="w-full p-3 mb-3 border border-green-300 rounded-lg"
+                required
+              />
+              <textarea
+                placeholder="Description"
+                value={newAnnouncement.description}
+                onChange={(e) =>
+                  setNewAnnouncement({ ...newAnnouncement, description: e.target.value })
+                }
+                className="w-full p-3 mb-3 border border-green-300 rounded-lg h-24"
+                required
+              ></textarea>
+              <select
+                value={newAnnouncement.priority}
+                onChange={(e) =>
+                  setNewAnnouncement({ ...newAnnouncement, priority: e.target.value })
+                }
+                className="p-3 mb-4 border border-green-300 rounded-lg"
+              >
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+              </select>
+              <button
+                type="submit"
+                className="bg-green-700 text-white px-5 py-2 rounded-lg hover:bg-green-800"
+              >
+                Add Announcement
+              </button>
+            </form>
+
+            {announcements.map((a) => (
+              <div key={a.id} className="border border-green-200 p-4 mb-3 rounded-xl bg-green-50">
+                <h3 className="font-bold text-green-900">{a.title}</h3>
+                <p className="text-green-800 mb-2">{a.description}</p>
                 <span
-                  className={`inline-block px-3 py-1 rounded-full font-semibold ${
-                    priorityColors[a.priority] || "bg-gray-100 text-gray-700"
+                  className={`px-3 py-1 text-sm rounded-full font-semibold ${
+                    priorityColors[a.priority]
                   }`}
                 >
                   Priority: {a.priority}
                 </span>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </section>
+        )}
 
-      {/* Feedback Section */}
-      <section className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-green-200">
-        <h2 className="text-2xl font-semibold mb-6 text-green-800 tracking-wide">
-          Citizen Feedback
-        </h2>
-        <ul className="space-y-5">
-          {feedbacks.map((f) => (
-            <li
-              key={f.id}
-              className="border border-green-200 p-5 rounded-xl bg-gray-50 shadow-inner"
-            >
-              <p className="font-semibold text-green-900 mb-2">{f.citizen}</p>
-              <p className="text-green-800">{f.message}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+        {/* Feedback Section */}
+        {activeTab === "feedback" && (
+          <section className="bg-white p-6 rounded-2xl shadow-md border border-green-200">
+            <h2 className="text-xl font-semibold mb-4 text-green-800">Citizen Feedback</h2>
+            {feedbacks.map((f) => (
+              <div key={f.id} className="border border-green-200 p-4 mb-3 rounded-xl bg-gray-50">
+                <p className="font-semibold text-green-900">{f.citizen}</p>
+                <p className="text-green-800">{f.message}</p>
+              </div>
+            ))}
+          </section>
+        )}
+      </main>
     </div>
   );
 }
